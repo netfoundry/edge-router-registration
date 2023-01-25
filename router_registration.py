@@ -50,7 +50,7 @@ def download_file(source_url):
         download_file = tarfile.open(file_name)
         for member in download_file.getmembers():
             download_file.extract(member, "/opt/netfoundry/")
-            cleanup_file("/opt/netfoundry/" + str(member))
+            os.remove(file_name)
     except OSError:
         print("Error: Unable to download binaries: ")
         sys.exit(1)
