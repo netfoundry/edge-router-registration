@@ -72,7 +72,8 @@ def main():
 
     # define static variables
     registration_script = "/opt/netfoundry/.router_reg"
-    artifactory_url = "https://github.com/netfoundry/edge-router-registration/releases/latest/download/router_registration.tar.gz"
+    download_url = ("https://github.com/netfoundry/edge-router-registration/"
+                    "releases/latest/download/router_registration.tar.gz")
 
     # run root check
     root_check()
@@ -90,7 +91,7 @@ def main():
     # only download if update is needed
     if do_update:
         cleanup_file(registration_script)
-        download_file(artifactory_url)
+        download_file(download_url)
 
     # run script
     sub_command = [registration_script] + sys.argv[1:]
