@@ -6,7 +6,6 @@ import os
 import sys
 import time
 import subprocess
-import requests
 import tarfile
 from tqdm import tqdm
 import requests
@@ -17,7 +16,7 @@ def cleanup_file(file_name):
     """
     try:
         if os.path.exists(file_name):
-           os.remove(file_name)
+            os.remove(file_name)
     except OSError:
         print("ERROR: Unable to remove file ", file_name)
 
@@ -36,7 +35,7 @@ def download_file(source_url):
     """
     try:
         file_name="router_registration.tar.gz"
-        response = requests.get(source_url, stream=True)
+        response = requests.get(source_url, stream=True, timeout=120)
 
         total_size = int(response.headers.get("content-length", 0))
         block_size = 1024  # 1 Kibibyte
@@ -47,10 +46,10 @@ def download_file(source_url):
                 status_bar.update(len(data))
                 open_file.write(data)
         status_bar.close()
-        download_file = tarfile.open(file_name)
-        for member in download_file.getmembers():
-            download_file.extract(member, "/opt/netfoundry/")
-            os.remove(file_name)
+        with tarfile.open(file_name) as downloaded_file:
+            for member in downloaded_file.getmembers():
+                downloaded_file.extract(member, "/opt/netfoundry/")
+                os.remove(file_name)
     except OSError:
         print("Error: Unable to download binaries: ")
         sys.exit(1)
@@ -74,7 +73,7 @@ def main():
     # define static variables
     registration_script = "/opt/netfoundry/.router_reg"
     artifactory_url = "https://github.com/netfoundry/edge-router-registration/releases/latest/download/router_registration.tar.gz"
-    
+
     # run root check
     root_check()
 
