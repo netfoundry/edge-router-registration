@@ -33,7 +33,8 @@ jobs:
       id: version
       
     - name: Tar bootstrap
-      run: cd dist; tar -zcvf router_registration_bootstrap.tar.gz router_registration
+      # tar with a dash in the name for backwards compatibility
+      run: cd dist; mv router_registration router-registration; tar -zcvf router_registration_bootstrap.tar.gz router-registration
     #- name: Tar registration script
     #  run: cd dist; mv router_reg .router_reg; tar -zcvf router_registration.tar.gz .router_reg
     - name: release

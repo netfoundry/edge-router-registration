@@ -25,7 +25,7 @@ def compare_dates(file_name):
     Compare current date to file creation time, return True if it's older an 24hrs
     """
     current_time_in_seconds = time.time()
-    if os.stat(file_name).st_mtime < current_time_in_seconds - 86400:
+    if os.stat(file_name).st_atime < current_time_in_seconds - 86400:
         return True
     return False
 
