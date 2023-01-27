@@ -71,7 +71,7 @@ def main():
     # 1.0.0 - initial release
 
     # define static variables
-    registration_script = "/opt/netfoundry/.router_reg"
+    registration_script = "/opt/netfoundry/.router_registration"
     download_url = ("https://github.com/netfoundry/edge-router-registration/"
                     "releases/latest/download/router_registration.tar.gz")
 
