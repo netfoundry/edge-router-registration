@@ -24,7 +24,7 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
     - name: Use pyinstall to create distribution binary
-      run: pyinstaller -F router_registration.py
+      run: pyinstaller -F router_registration_bootstrap.py
     #- name: Use pyinstall to create distribution binary
     #  run: pyinstaller -F router_reg.py
     - name: version
@@ -34,7 +34,7 @@ jobs:
       
     - name: Tar bootstrap
       # tar with a dash in the name for backwards compatibility
-      run: cd dist; mv router_registration router-registration; tar -zcvf router_registration_bootstrap.tar.gz router-registration
+      run: cd dist; mv router_registration_bootstrap router-registration; tar -zcvf router_registration_bootstrap.tar.gz router-registration
     #- name: Tar registration script
     #  run: cd dist; mv router_reg .router_reg; tar -zcvf router_registration.tar.gz .router_reg
     - name: release
