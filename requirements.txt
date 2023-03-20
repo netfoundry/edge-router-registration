@@ -2,3 +2,8 @@ pylint
 pyinstaller
 requests
 tqdm
+psutil
+packaging
+pyjwt
+colorama
+jinja2
