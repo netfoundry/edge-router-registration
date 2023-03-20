@@ -646,13 +646,22 @@ def enroll_ziti(jwt_string, install_dir):
                            path=install_dir,
                            content=jwt_string)
 
+    if os.path.isfile(install_dir + "/ziti-router"):
+        registration_command = [f"{install_dir}/ziti-router",
+                                'enroll',
+                                f"{install_dir}/config.yaml",
+                                '--jwt',
+                                jwt_path]
+    else:
+        registration_command = [f"{install_dir}/ziti",
+                                'router',
+                                'enroll',
+                                f"{install_dir}/config.yaml",
+                                '--jwt',
+                                jwt_path]
+
     try:
-        subprocess.run([f"{install_dir}/ziti",
-                       'router',
-                       'enroll',
-                       f"{install_dir}/config.yaml",
-                       '--jwt',
-                       jwt_path],
+        subprocess.run(registration_command,
                        capture_output=True,
                        text=True,
                        check=True)
@@ -923,6 +932,7 @@ def handle_systemd_setup(install_version, install_dir):
     logging.info("Installing service unit file")
     version_compare = compare_semver(install_version, '0.27.0')
     logging.debug("Version comp value: %s",version_compare)
+    single_binary = False
     if version_compare >= 0:
         single_binary = True
     service_unit = service_template.render(single_binary=single_binary,
