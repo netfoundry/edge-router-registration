@@ -646,7 +646,7 @@ def enroll_ziti(jwt_string, install_dir):
                            path=install_dir,
                            content=jwt_string)
 
-    if os.path.isfile(install_dir + "/ziti-router"):
+    if os.path.isfile(f"{install_dir}/ziti-router"):
         registration_command = [f"{install_dir}/ziti-router",
                                 'enroll',
                                 f"{install_dir}/config.yaml",
@@ -1066,19 +1066,19 @@ def set_identity(args):
     if args.identityCert:
         identity_cert = args.args.identityCert
     else:
-        identity_cert = args.installDir + "/certs/cert.pem"
+        identity_cert = f"{args.installDir}/certs/cert.pem"
     if args.identityServerCert:
         identity_server_cert = args.identityServerCert
     else:
-        identity_server_cert = args.installDir + "/certs/server_cert.pem"
+        identity_server_cert = f"{args.installDir}/certs/server_cert.pem"
     if args.identityKey:
         identity_key = args.identityKey
     else:
-        identity_key = args.installDir + "/certs/key.pem"
+        identity_key = f"{args.installDir}/certs/key.pem"
     if args.identityCa:
         identity_ca = args.identityCa
     else:
-        identity_ca = args.installDir + "/certs/ca.pem"
+        identity_ca = f"{args.installDir}/certs/ca.pem"
     return {
         'cert': identity_cert,
         'server_cert': identity_server_cert,
