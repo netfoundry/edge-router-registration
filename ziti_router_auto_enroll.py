@@ -12,6 +12,7 @@ import os
 import logging
 import json
 import subprocess
+import platform
 import ipaddress
 import distro
 import psutil
@@ -737,6 +738,35 @@ def get_router_jwt(session_token, router_id, endpoint):
                     response.text)
     sys.exit(1)
 
+def get_os_platform():
+    """
+    Determines the OS platform and returns one of the following:
+    'darwin-amd64', 'linux-arm', 'linux-arm64', 'linux-amd64', 'windows-amd64'
+
+    :return: The OS platform string.
+    """
+    os_system = platform.system().lower()
+    architecture = platform.machine().lower()
+
+    if os_system == 'darwin':
+        return 'darwin-amd64'
+    if os_system == 'linux':
+        if architecture == 'arm' or architecture.startswith('armv'):
+            return 'linux-arm'
+        if architecture in ('aarch64','arm64'):
+            return 'linux-arm64'
+        if architecture == 'x86_64':
+            return 'linux-amd64'
+        logging.error("Unsupported Linux architecture: %s", architecture)
+        sys.exit(1)
+    if os_system == 'windows':
+        if architecture in ('amd64','x86_64'):
+            return 'windows-amd64'
+        logging.error("Unsupported Linux architecture: %s", architecture)
+        sys.exit(1)
+    logging.error("Unsupported OS/architecture: %s %s", os_system, architecture)
+    sys.exit(1)
+
 def get_session_token(username, password, endpoint):
     """
     Authenticates with the given username and password and retrieves a session token.
@@ -929,10 +959,12 @@ def handle_ziti_install(controller_info,
     else:
         logging.info("Version was specified: %s", install_version)
     if download_url is None:
-        # TODO: Determine platform based on local information instead of hard coding it.
+        os_architecture = get_os_platform()
         download_uri = ('https://github.com/openziti/ziti/releases/download/v' +
                         str(install_version) +
-                        '/ziti-linux-amd64-' +
+                        '/ziti-' +
+                        os_architecture +
+                        '-' +
                         str(install_version) +
                         '.tar.gz')
     else:
