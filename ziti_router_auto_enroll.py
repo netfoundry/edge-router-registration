@@ -466,6 +466,16 @@ def add_create_router_arguments(parser):
     create_router_group.add_argument('--routerName',type=str,
                                      help='Router name created in controller')
 
+def check_root_permissions():
+    """
+    Check to see if this is running as root privileges & exit if not.
+
+    """
+    if os.geteuid() >= 1:
+        logging.error("This script must be run with elevated privileges, "
+                      "please use sudo or run as root")
+        sys.exit(1)
+
 def create_file(name, path, content="", permissions=0o644):
     """
     Create a file with the given name, path, content, and permissions.
@@ -1553,6 +1563,9 @@ def main():
 
     # setup logging
     setup_logging(log_file, args.logLevel)
+
+    # root check
+    check_root_permissions()
 
     # check to make sure it's not already registered
     if args.force:
