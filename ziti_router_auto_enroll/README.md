@@ -93,24 +93,25 @@ The script take one positional argument, a jwt string which is optional.
 - `--csrSansUri`: List of SANS URIs
 - `--apiProxyListener`: The interface and port that the Edge API should be served on.
     - Format: 'Listner'
-    - Example: '0.0.0.0:1080'
+      - Example: '0.0.0.0:1080'
 - `--apiProxyUpstream`: The hostname and port combination to the ziti-controller hosted Edge API
     - Format: 'Upstream'
-    - Example: '0.0.0.0:1080'
+      - Example: '0.0.0.0:1080'
 
 ### Link Options
 - `--linkDialers`: Link Dialers (Default: 'transport')
-    Format: BINDING BIND
-    Binding: The binding type ('transport')
-    Bind: The network interface used to dial the controller and router links can be ip or interface name.
+    - Format: BINDING BIND
+    - Binding: The binding type ('transport')
+    - Bind: The network interface used to dial the controller and router links can be ip or interface name.
+      - Example: 'transport' '0.0.0.0'
 
-    Example: 'transport' '0.0.0.0'
 - `--linkListeners`: Link Listener (Default: None)
-    Format: 'BINDING' 'BIND' 'ADVERTISE' 'OUTQUESIZE'
-    Binding: The binding type ('transport')
-    Bind: A protocol:host:port string on which network interface to listen on. 0.0.0.0 will listen on all interfaces
-    Advertise: The protocol:host:port combination other router should use to connect.
-    OutQueSize: The queue size for #TODO
+    - Format: 'BINDING' 'BIND' 'ADVERTISE' 'OUTQUESIZE'
+    - Binding: The binding type ('transport')
+    - Bind: A protocol:host:port string on which network interface to listen on. 0.0.0.0 will listen on all interfaces
+    - Advertise: The protocol:host:port combination other router should use to connect.
+    - OutQueSize: The queue size for #TODO
+      - Example: 'transport' 'tls:0.0.0.0:80' 'tls:myhost:80' '16'
 
 ### Listeners Options
 - `--disableListeners`: Disable Listeners portion of router config
@@ -123,17 +124,20 @@ The script take one positional argument, a jwt string which is optional.
     - MaxOutstandingConnects: The maximum number of connects that have  begun hello synchronization (1 to 1000, default 16)
     - ConnectionTimeoutMS: The number of milliseconds to wait before a hello synchronization fails and closes the connection (30ms to 60000ms, default: 1000ms)
     - LookupApiSessionTimeout: How long to wait before timing out when looking up api-sessions after client connect. Default 5 seconds.
+      - Example: 'tls:0.0.0.0:443' 'myhost:443' '1000' '16' '1000' '5'
 
 - `--proxyListeners`: Proxy Binding Listener (Default: None)
     - Format: 'ADDRESS' 'SERVICE'
     - Address: A protocol:host:port string on which network interface to listen on. 0.0.0.0 will listen on all interfaces
     - Service: The name of the ziti service to connect.
+      - Example: 'tcp:0.0.0.0:123' 'my_ntp_service'
+      
 - `--tunnelListener`: Tunnel Binding Listener (Default: None)
     - Format: 'MODE' 'RESOLVER' 'LANIF'
     - Mode: Tunnel mode ('tproxy', 'host', 'proxy')
     - Resolver: A protocol:host:port string on which network interface to listen on.
-      - Example: udp://127.0.0.1:53
     - LanIf: The lan interface to create to create tproxy rules.
+      - Example: 'tproxy' 'udp://127.0.0.1:53' 'eth0'
 - `--autoTunnelListener`: Automatically add a local tproxy tunneler with the {default_gw_adapter} as the local resolver and LANIf
 
 ### Web Options
@@ -143,6 +147,7 @@ The script take one positional argument, a jwt string which is optional.
     - Interface: A host:port string on which network interface to listen on. 0.0.0.0 will listen on all interfaces
     - Address: The public address that external incoming requests will be able to resolve.
     - Binding: Specifies an API to bind to this webListener. Built-in APIs are
+      - Example: 'health-check' '0.0.0.0:8081' '0.0.0.0:8081' 'health-checks'
 
 ## Router Creation Options
 
