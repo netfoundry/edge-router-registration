@@ -264,6 +264,24 @@ def add_router_identity_arguments(parser):
                                               help='Path to ca chain - '
                                                    'Default {installDir}}/certs/ca.pem')
 
+def add_router_ctrl_arguments(parser):
+    """
+    Add ctrl options arguments to the parser.
+
+    :param parser: The argparse.ArgumentParser instance to add the arguments to.
+    """
+    router_ctrl_config_group = parser.add_argument_group('Controller Options')
+    router_ctrl_config_group.add_argument('--controller',type=str,
+                                     help='Hostname or IP of Openziti controller')
+    router_ctrl_config_group.add_argument('--controllerFabricPort',type=int,
+                                     help='Controller Fabric Port'
+                                          'Default 80',
+                                     default=80)
+    router_ctrl_config_group.add_argument('--controllerMgmtPort',type=int,
+                                     help='Controller Management Port'
+                                          'Default 443',
+                                     default=443)
+
 def add_router_health_checks_arguments(parser):
     """
     Add health checks options arguments to the parser.
@@ -453,17 +471,6 @@ def add_create_router_arguments(parser):
                                      help="Openziti Admin username")
     create_router_group.add_argument('--adminPassword',type=str,
                                      help='Openziti Admin passowrd')
-    create_router_group.add_argument('--controller',type=str,
-                                     help='Hostname or IP of Openziti controller')
-    create_router_group.add_argument('--controllerFabricPort',type=int,
-                                     help='Controller Fabric Port',
-                                     default=80)
-    create_router_group.add_argument('--controllerEdgePort',type=int,
-                                     help='Controller Edge Port',
-                                     default=443)
-    create_router_group.add_argument('--controllerMgmtPort',type=int,
-                                     help='Controller Edge Port',
-                                     default=443)
     create_router_group.add_argument('--routerName',type=str,
                                      help='Router name created in controller')
 
@@ -551,6 +558,7 @@ def create_parser():
     add_general_arguments(parser, __version__)
     add_install_arguments(parser)
     add_router_identity_arguments(parser)
+    add_router_ctrl_arguments(parser)
     add_router_health_checks_arguments(parser)
     add_router_metrics_arguments(parser)
     add_router_edge_arguments(parser)
@@ -963,7 +971,7 @@ def handle_ziti_install(controller_info,
     controller_url = (
     f"{controller_info['scheme']}://"
     f"{controller_info['hostname']}:"
-    f"{controller_info['edge_port']}")
+    f"{controller_info['mgmt_port']}")
     if install_version is None:
         install_version = get_ziti_controller_version(controller_url)
     else:
@@ -1239,7 +1247,7 @@ def set_controller_info(args, jwt_info):
     controller_info = {
         "scheme": controller_url.scheme,
         "hostname": controller_hostname,
-        "edge_port": args.controllerEdgePort,
+        "mgmt_port": args.controllerMgmtPort,
         "fabric_port": args.controllerFabricPort
     }
 
