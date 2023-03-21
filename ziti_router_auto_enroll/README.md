@@ -14,9 +14,19 @@ This Python script automates the process of enrolling and configuring a Ziti edg
 3. **DNS handling**: The script can configure the system's DNS settings based on the operating system, currently supporting Ubuntu.
 4. **Re-Registering**: The script can be used on a system already registerd & will stop the services before proceeding with the re-registration process.
 
-## Limitations
+## Examples
 
-- The script currently supports Ubuntu for DNS handling. Support for other operating systems might be added in the future.
+`./ziti_router_auto_enroll --jwt enrollment.txt`
+
+- "Private" - This is the default edge-router configuration with the interface is that used as the default GW. This will create a edge listner. This will & only accept ziti SDK connections on port 443 & healthchecks on port 8081.
+
+
+`./ziti_router_auto_enroll --jwt enrollment.txt --assumePublic`
+
+- "Public" - This will change the default edge listner by using whatever external IP is used outbound instead of the local interface IP/name.   This also add a link listner using the same external IP. This will & accept ziti SDK connections on port 443 & other router links on port 80 & healthchecks on port 8081.
+
+`./ziti_router_auto_enroll --jwt enrollment.txt --autoTunnelListener`
+- "Private with local Tunneler enabled" - This will change the default to add a local Tunnel listner using the the interface is that used as the default GW & will attempt to configure the local DNS so the local interface is the first resolver for the OS.
 
 
 ## Main Options
