@@ -235,7 +235,7 @@ def add_install_arguments(parser):
                                 help='File containing all parameters - json or yaml')
     install_config.add_argument('--installDir', type=str,
                                 help='Installation directory for Openziti - '
-                                     'Default .',
+                                     'Default /opt/ziti',
                                 default='/opt/ziti')
     install_config.add_argument('--installVersion', type=str,
                                 help='Install specific version - '
