@@ -65,7 +65,6 @@ The script take one positional argument, a jwt string which is optional.
 - `--controller`: Hostname or IP of Openziti controller
 - `--controllerMgmtPort`: Controller Edge Port
 - `--controllerFabricPort`: Controller Fabric Port
-- `--controllerEdgePort`: Controller Edge Port
 
 ### HealthCheck Options
 
