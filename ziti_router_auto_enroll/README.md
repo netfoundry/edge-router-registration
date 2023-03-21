@@ -4,6 +4,9 @@ This Python script automates the process of enrolling and configuring a Ziti edg
 
 ## Requirements
 
+### Running compiled binary
+- Ubuntu 20.04 or higher
+### Running with python
 - Python 3.6 or higher
 - see requirements.txt for specific packages
 
@@ -56,6 +59,13 @@ The script take one positional argument, a jwt string which is optional.
 - `--identityServerCert`: Path to server chain (Default: `{installDir}/certs/server_cert.pem`)
 - `--identityKey`: Path to key file (Default: `{installDir}/certs/key.pem`)
 - `--identityCa`: Path to CA chain (Default: `{installDir}/certs/ca.pem`)
+
+### Controller options
+
+- `--controller`: Hostname or IP of Openziti controller
+- `--controllerMgmtPort`: Controller Edge Port
+- `--controllerFabricPort`: Controller Fabric Port
+- `--controllerEdgePort`: Controller Edge Port
 
 ### HealthCheck Options
 
@@ -141,9 +151,4 @@ Create a new router on the controller before enrollment:
 
 - `--adminUser`: Openziti Admin username
 - `--adminPassword`: Openziti Admin password
-- `--controller`: Hostname or IP of Openziti controller
-- `--controllerMgmtPort`: Controller Edge Port
 - `--routerName`: Router name created in controller
-
-- `--controllerFabricPort`: Controller Fabric Port
-- `--controllerEdgePort`: Controller Edge Port
