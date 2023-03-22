@@ -14,6 +14,7 @@ import json
 import subprocess
 import platform
 import ipaddress
+import yaml
 import distro
 import psutil
 from packaging.version import Version
@@ -483,6 +484,64 @@ def check_root_permissions():
         logging.error("This script must be run with elevated privileges, "
                       "please use sudo or run as root")
         sys.exit(1)
+
+def check_env_vars(args, parser):
+    """
+    Sets argparse argument values based on environment variables with matching names.
+
+    :args:args (argparse.Namespace): A Namespace object containing the parsed arguments.
+
+    """
+    for arg in vars(args):
+        env_name = arg.upper()
+        env_value = os.environ.get(env_name)
+        if env_value is not None:
+            current_argument = getattr(args, arg)
+            if current_argument == parser.get_default(arg) or current_argument is None:
+                setattr(args, arg, env_value)
+            else:
+                logging.warning("Overriding Environmental value"
+                                " for %s, with value set via cli", arg)
+
+def check_parameters_file(args, parser):
+    """
+    Sets argparse argument values based on values in a YAML or JSON file.
+
+    :args:args (argparse.Namespace): A Namespace object containing the parsed arguments.
+
+    """
+    if not os.path.exists(args.parametersFile):
+        logging.error("Unable to open file: %s", args.parametersFile)
+        sys.exit(1)
+
+    logging.debug("Attempting to open parameters file: %s", args.parametersFile)
+    with open(args.parametersFile, encoding='UTF-8') as open_file:
+        if args.parametersFile.endswith('.json'):
+            logging.debug("Found json file, trying to open.")
+            try:
+                config = json.load(open_file)
+            except json.JSONDecodeError as error:
+                logging.error("Unable to decode Json file: %s", error)
+                sys.exit(1)
+        elif args.parametersFile.endswith('.yaml') or args.parametersFile.endswith('.yml'):
+            logging.debug("Found yaml file, trying to open.")
+            try:
+                config = yaml.safe_load(open_file)
+            except yaml.YAMLError as error:
+                logging.error("Unable to decode Yaml file: %s", error)
+                sys.exit(1)
+        else:
+            logging.error("File format not supported: %s", args.parametersFile)
+            sys.exit(1)
+
+    for arg in vars(args):
+        if arg in config:
+            current_argument = getattr(args, arg)
+            if current_argument == parser.get_default(arg) or current_argument is None:
+                setattr(args, arg, config[arg])
+            else:
+                logging.warning("Overriding parameter file value for %s,"
+                                " with value set via cli", arg)
 
 def create_file(name, path, content="", permissions=0o644):
     """
@@ -1439,6 +1498,7 @@ def process_jwt(args, parser):
     :return: The decoded JWT string.
     """
     if args.enrollment_jwt:
+        logging.debug("JWT String: %s", args.enrollment_jwt)
         jwt_info, jwt_string = decode_jwt(args.enrollment_jwt)
     elif args.jwt:
         with open(args.jwt, 'r',encoding='UTF-8') as file:
@@ -1454,15 +1514,15 @@ def process_jwt(args, parser):
                                           args.adminPassword,
                                           controller_url)
         router_id = create_edge_router(session_token,
-                                         args.routerName,
-                                         controller_url)
+                                       args.routerName,
+                                       controller_url)
         router_jwt = get_router_jwt(session_token,
                                     router_id,
                                     controller_url)
         jwt_info, jwt_string = decode_jwt(router_jwt)
     else:
         parser.print_help()
-        logging.error("Need a JWT or Router Creation Options")
+        logging.error("Need a JWT or Router Creation and Controller Options")
         sys.exit(1)
 
     return jwt_string, jwt_info
@@ -1614,8 +1674,15 @@ def main():
     # setup logging
     setup_logging(log_file, args.logLevel)
 
+    # check environment for args
+    check_env_vars(args, parser)
+
+    # check file for args if a file is passed in
+    if args.parametersFile:
+        check_parameters_file(args, parser)
+
     # root check
-    check_root_permissions()
+    #check_root_permissions()
 
     # check to make sure it's not already registered
     if args.force:
