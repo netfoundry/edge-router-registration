@@ -34,7 +34,7 @@ This Python script automates the process of enrolling and configuring a Ziti edg
 
 ## Main Options
 
-The script take one positional argument, a jwt string which is optional.
+**One positional argument**, a jwt string which is optional.(enrollment_jwt)
 
 - `-j JWT`, `--jwt JWT`: Path to file-based JWT
 - `-p`, `--printConfig`: Print the generated configuration and exit
