@@ -25,16 +25,20 @@ jobs:
         pip install -r requirements.txt
     - name: Use pyinstall to create distribution binary
       run: pyinstaller -F router_registration_bootstrap.py
+    - name: Use pyinstall to create distribution binary
+      run: pyinstaller -F ziti_router_auto_enroll/ziti_router_auto_enroll.py      
     #- name: Use pyinstall to create distribution binary
     #  run: pyinstaller -F router_reg.py
     - name: version
       #run: echo "::set-output name=version::$(./dist/router_reg -v)"
-      run: echo "::set-output name=version::$(echo 4.2.2)"
+      run: echo "::set-output name=version::$(./dist/ziti_router_auto_enroll -v)"
       id: version
       
     - name: Tar bootstrap
       # tar with a dash in the name for backwards compatibility
       run: cd dist; mv router_registration_bootstrap router-registration; tar -zcvf router_registration_bootstrap.tar.gz router-registration
+    - name: Tar ziti router auto enroll
+      run: cd dist; tar -zcvf ziti_router_auto_enroll.tar.gz ziti_router_auto_enroll
     #- name: Tar registration script
     #  run: cd dist; mv router_reg .router_reg; tar -zcvf router_registration.tar.gz .router_reg
     - name: release
@@ -56,6 +60,16 @@ jobs:
         upload_url: ${{ steps.release.outputs.upload_url }}
         asset_path: dist/router_registration_bootstrap.tar.gz
         asset_name: router_registration_bootstrap.tar.gz
+        asset_content_type: application/gzip
+
+    - name: Upload ziti_router_auto_enroll
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+      with:
+        upload_url: ${{ steps.release.outputs.upload_url }}
+        asset_path: dist/ziti_router_auto_enroll.tar.gz
+        asset_name: ziti_router_auto_enroll.tar.gz
         asset_content_type: application/gzip
 
 #    - name: Upload registration script release
