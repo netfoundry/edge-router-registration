@@ -163,13 +163,13 @@ Besides passing in every argument with a --argumentName you can also use:
 
   - OS Environment 
   - A Parameters file
-## Using Environmental Variables
+### Using Environmental Variables
 
 You can pass any argument vi OS Environmental variables.  All argument are in all UPPER case.
 
 Example:  `export CONTROLLERFABRICPORT=123`
 
-## Using parameter file
+### Using parameter file
 You can pass any argument vi paramter files.  Json or Yaml format is supported.
 
 Example Json:
