@@ -47,7 +47,7 @@ The script take one positional argument, a jwt string which is optional.
 ## Install Options
 
 - `--logFile`: Specify the log file (Default: `{cwd}/{program_name}.log`)
-- `--parametersFile`: File containing all parameters (JSON or YAML)
+- `--parametersFile`: File containing all parameters Json or Yaml format (.json or .yaml/.yml)
 - `--installDir`: Installation directory for Openziti (Default: `/opt/ziti`)
 - `--installVersion`: Install a specific version (Default is to match Controller)
 - `--downloadUrl`: Bundle download URL (Default: `https://github.com/openziti/ziti/releases/latest/`)
@@ -157,12 +157,19 @@ Create a new router on the controller before enrollment:
 - `--adminPassword`: Openziti Admin password
 - `--routerName`: Router name created in controller
 
-# Passing arguments values using Environmental Variables
+## Passing arguments values
+
+Besides passing in every argument with a --argumentName you can also use:
+
+  - OS Environment 
+  - A Parameters file
+## Using Environmental Variables
+
 You can pass any argument vi OS Environmental variables.  All argument are in all UPPER case.
 
 Example:  `export CONTROLLERFABRICPORT=123`
 
-# Passing arguments using parameter file
+## Using parameter file
 You can pass any argument vi paramter files.  Json or Yaml format is supported.
 
 Example Json:
