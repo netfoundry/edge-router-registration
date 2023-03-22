@@ -1519,6 +1519,8 @@ def process_jwt(args, parser):
         router_jwt = get_router_jwt(session_token,
                                     router_id,
                                     controller_url)
+        logging.info("Writing jwt file: %s_enrollment.jwt", args.routerName)
+        create_file(f"{args.routerName}_enrollment.jwt",".", router_jwt)
         jwt_info, jwt_string = decode_jwt(router_jwt)
     else:
         parser.print_help()
