@@ -30,8 +30,8 @@ jobs:
     #- name: Use pyinstall to create distribution binary
     #  run: pyinstaller -F router_reg.py
     - name: version
-      #run: echo "::set-output name=version::$(./dist/router_reg -v)"
-      run: echo "::set-output name=version::$(./dist/ziti_router_auto_enroll -v)"
+      #run: echo "version=$(./dist/router_registration -v)" >> $GITHUB_ENV
+      run: echo "version=$(./dist/ziti_router_auto_enroll -v)" >> $GITHUB_ENV
       id: version
       
     - name: Tar bootstrap
@@ -47,8 +47,8 @@ jobs:
       with:
         draft: false
         prerelease: false
-        release_name: v${{ steps.version.outputs.version }}
-        tag_name: v${{ steps.version.outputs.version }}
+        release_name: v${{ env.version }}
+        tag_name: v${{ env.version }}
       env:
         GITHUB_TOKEN: ${{ github.token }}
 
