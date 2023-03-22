@@ -171,6 +171,7 @@ Example:  `export CONTROLLERFABRICPORT=123`
 
 ### Using parameter file
 You can pass any argument vi paramter files.  Json or Yaml format is supported.
+The file extension needs to be .json or .yaml/.yml
 
 Example Json:
 ```
