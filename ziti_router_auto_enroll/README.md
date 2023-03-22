@@ -46,11 +46,11 @@ The script take one positional argument, a jwt string which is optional.
 
 ## Install Options
 
-- `--logFile LOGFILE`: Specify the log file (Default: `{cwd}/{program_name}.log`)
-- `--parametersFile PARAMETERSFILE`: File containing all parameters (JSON or YAML)
-- `--installDir INSTALLDIR`: Installation directory for Openziti (Default: `/opt/ziti`)
-- `--installVersion INSTALLVERSION`: Install a specific version (Default is to match Controller)
-- `--downloadUrl DOWNLOADURL`: Bundle download URL (Default: `https://github.com/openziti/ziti/releases/latest/`)
+- `--logFile`: Specify the log file (Default: `{cwd}/{program_name}.log`)
+- `--parametersFile`: File containing all parameters (JSON or YAML)
+- `--installDir`: Installation directory for Openziti (Default: `/opt/ziti`)
+- `--installVersion`: Install a specific version (Default is to match Controller)
+- `--downloadUrl`: Bundle download URL (Default: `https://github.com/openziti/ziti/releases/latest/`)
 
 ## Configuration Options
 ### Router Identity Paths
@@ -156,3 +156,22 @@ Create a new router on the controller before enrollment:
 - `--adminUser`: Openziti Admin username
 - `--adminPassword`: Openziti Admin password
 - `--routerName`: Router name created in controller
+
+# Passing arguments values using Environmental Variables
+You can pass any argument vi OS Environmental variables.  All argument are in all UPPER case.
+
+Example:  `export CONTROLLERFABRICPORT=123`
+
+# Passing arguments using parameter file
+You can pass any argument vi paramter files.  Json or Yaml format is supported.
+
+Example Json:
+```
+{
+  "controllerFabricPort": 123
+}
+```
+Example Yaml:
+```
+controllerFabricPort: 123
+```
