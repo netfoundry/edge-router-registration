@@ -1682,7 +1682,7 @@ def main():
         check_parameters_file(args, parser)
 
     # root check
-    #check_root_permissions()
+    check_root_permissions()
 
     # check to make sure it's not already registered
     if args.force:
