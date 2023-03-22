@@ -8,14 +8,14 @@ This Python script automates the process of enrolling and configuring a Ziti edg
 - Ubuntu 20.04 or higher
 ### Running with python
 - Python 3.6 or higher
-- see requirements.txt for specific packages
+- Install requirements: `pip install -r requirements.txt`
 
 ## Main Features
 
 1. **Automated enrollment**: The script can enroll a Ziti edge router using a provided JWT or by connecting to the controller to create a new router.
 2. **Configuration generation**: The script generates a configuration file using Jinja2 templates, with support for customizing various settings.
-3. **DNS handling**: The script can configure the system's DNS settings based on the operating system, currently supporting Ubuntu.
-4. **Re-Registering**: The script can be used on a system already registerd & will stop the services before proceeding with the re-registration process.
+3. **DNS handling**: The script can configure the system's DNS settings based on the operating system if tunnel is enabled, currently supporting Ubuntu.
+4. **Re-Registering**: The script can be used on a system already registered & will stop the services before proceeding with the re-registration process.
 
 ## Examples
 
