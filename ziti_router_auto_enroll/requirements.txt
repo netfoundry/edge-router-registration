@@ -6,3 +6,4 @@ pyjwt
 colorama
 jinja2
 distro
+pyyaml

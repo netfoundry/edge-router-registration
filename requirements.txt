@@ -5,6 +5,7 @@ tqdm
 psutil
 packaging
 pyjwt
+pyyaml
 colorama
 jinja2
 distro
