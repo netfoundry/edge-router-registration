@@ -1164,21 +1164,25 @@ def set_identity(args):
     """
 
     if args.identityCert:
-        identity_cert = args.args.identityCert
+        identity_cert = args.identityCert
     else:
         identity_cert = f"{args.installDir}/certs/cert.pem"
+
     if args.identityServerCert:
         identity_server_cert = args.identityServerCert
     else:
         identity_server_cert = f"{args.installDir}/certs/server_cert.pem"
+
     if args.identityKey:
         identity_key = args.identityKey
     else:
         identity_key = f"{args.installDir}/certs/key.pem"
+
     if args.identityCa:
         identity_ca = args.identityCa
     else:
         identity_ca = f"{args.installDir}/certs/ca.pem"
+
     return {
         'cert': identity_cert,
         'server_cert': identity_server_cert,
