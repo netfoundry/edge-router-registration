@@ -1690,7 +1690,7 @@ def create_template(args, controller_info):
 
     return filled_out_template
 
-def main():
+def main(args):
     """
     Main logic
     """
@@ -1698,7 +1698,7 @@ def main():
     parser = create_parser()
 
     # get arguments passed
-    args = parser.parse_args()
+    args = parser.parse_args(args)
 
     if args.logFile:
         log_file = args.logFile
@@ -1769,4 +1769,4 @@ def main():
 
 # main
 if __name__ == '__main__':
-    main()
+    main(sys.argv[1:])
