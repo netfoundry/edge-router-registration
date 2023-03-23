@@ -70,6 +70,7 @@ This Python script automates the process of enrolling and configuring a Ziti edg
 ### HealthCheck Options
 
 - `--disableHealthChecks`: Disable HealthChecks portion of router config
+  - Note: If you disable HealthChecks, the web section is also automatically disabled.
 - `--ctrlPingCheckInterval`: How often to ping the controller (Default: 30)
 - `--ctrlPingCheckTimeout`: Timeout the ping (Default: 15)
 - `--ctrlPingCheckInitialDelay`: How long to wait before pinging the controller (Default: 15)
