@@ -101,7 +101,7 @@ This Python script automates the process of enrolling and configuring a Ziti edg
 
 ### Link Options
 - `--linkDialers`: Link Dialers (Default: 'transport')
-    - Format: BINDING BIND
+    - Format: 'BINDING' 'BIND'
     - Binding: The binding type ('transport')
     - Bind: The network interface used to dial the controller and router links can be ip or interface name.
       - Example: 'transport' '0.0.0.0'
