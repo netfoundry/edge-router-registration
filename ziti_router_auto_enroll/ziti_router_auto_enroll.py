@@ -1212,7 +1212,10 @@ def set_link_dialers(args):
     link_dialers = []
     if args.linkDialers:
         for dialer in args.linkDialers:
-            link_dialer_values = {'binding': dialer[0], 'bind': dialer[1]}
+            link_dialer_values = {}
+            link_dialer_values['binding'] = dialer[0]
+            if len(dialer) > 1:
+                link_dialer_values['bind'] = dialer[1]
             link_dialers.append(link_dialer_values)
     else:
         link_dialer_values = {'binding': 'transport'}
@@ -1319,9 +1322,24 @@ def assemble_sans(args, csr_sans_dns, csr_sans_ip):
     sans = {"dns": csr_sans_dns, "ip": csr_sans_ip}
 
     if args.csrSansEmail:
-        sans['email'] = args.csrSansEmail
+        csr_sans_email = []
+        if not isinstance(args.csrSansEmail, list):
+            csr_emails = [args.csrSansEmail]
+        else:
+            csr_emails = args.csrSansEmail
+        for item in csr_emails:
+            csr_sans_email.append(item)
+        sans['email'] = csr_sans_email
+
     if args.csrSansUri:
-        sans['uri'] = args.csrSansUri
+        csr_sans_uri = []
+        if not isinstance(args.csrSansUri, list):
+            csr_uri = [args.csrSansUri]
+        else:
+            csr_uri = args.csrSansUri
+        for item in csr_uri:
+            csr_sans_uri.append(item)
+        sans['uri'] = csr_sans_uri
 
     return sans
 
@@ -1359,10 +1377,18 @@ def set_edge_csr_sans(args):
     csr_sans_dns, csr_sans_ip = process_listeners_sans(args)
 
     if args.csrSansIp:
-        for item in args.csrSansIp:
+        if not isinstance(args.csrSansIp, list):
+            csr_ip = [args.csrSansIp]
+        else:
+            csr_ip = args.csrSansIp
+        for item in csr_ip:
             csr_sans_ip.append(item)
     if args.csrSansDns:
-        for item in args.csrSansDns:
+        if not isinstance(args.csrSansDns, list):
+            csr_dns = [args.csrSansDns]
+        else:
+            csr_dns = args.csrSansDns
+        for item in csr_dns:
             csr_sans_dns.append(item)
 
     sans = assemble_sans(args, csr_sans_dns, csr_sans_ip)
