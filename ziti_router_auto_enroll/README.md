@@ -93,12 +93,14 @@ This Python script automates the process of enrolling and configuring a Ziti edg
 - `--csrSansDns`: List of SANS DNS names
 - `--csrSansIp`: List of SANS IP Addresses
 - `--csrSansUri`: List of SANS URIs
+
+### API Proxy Options
 - `--apiProxyListener`: The interface and port that the Edge API should be served on.
     - Format: 'Listner'
       - Example: '0.0.0.0:1080'
 - `--apiProxyUpstream`: The hostname and port combination to the ziti-controller hosted Edge API
     - Format: 'Upstream'
-      - Example: '0.0.0.0:1080'
+      - Example: 'mycontrollerhostname:1080'
 
 ### Link Options
 - `--linkDialers`: Link Dialers (Default: 'transport')

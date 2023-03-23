@@ -104,12 +104,13 @@ edge:
         - {{ uri }}
         {%- endfor %}
     {%- endif %}
-{%- if edge.apiProxy is defined %}
+{%- endif %}
+{%- if apiProxy is defined %}
 apiProxy:
-  listener: {{ edge.apiProxy.listener }}
-  upstream: {{ edge.apiProxy.upstream }}
+  listener: {{ apiProxy.listener }}
+  upstream: {{ apiProxy.upstream }}
 {%- endif %}
-{%- endif %}
+
 
 {%- if listeners is defined %}
 listeners:
@@ -370,9 +371,17 @@ def add_router_edge_arguments(parser):
     router_edge_config_group.add_argument('--csrSansUri',
                                           action='append',
                                           help='List of SANS URIs')
-    router_edge_config_group.add_argument('--apiProxyListener', default=[],
+
+def add_router_api_proxy_arguments(parser):
+    """
+    Add api proxy options arguments to the parser.
+
+    :param parser: The argparse.ArgumentParser instance to add the arguments to.
+    """
+    router_proxy_config = parser.add_argument_group('API Proxy')
+    router_proxy_config.add_argument('--apiProxyListener', default=[],
                                           help='ProxyListener')
-    router_edge_config_group.add_argument('--apiProxyUpstream', default=[],
+    router_proxy_config.add_argument('--apiProxyUpstream', default=[],
                                           help='ProxyUpstream')
 
 def add_router_fabric_link_arguments(parser):
@@ -627,6 +636,7 @@ def create_parser():
     add_router_health_checks_arguments(parser)
     add_router_metrics_arguments(parser)
     add_router_edge_arguments(parser)
+    add_router_api_proxy_arguments(parser)
     add_router_fabric_link_arguments(parser)
     add_router_listener_arguments(parser)
     add_router_web_arguments(parser)
@@ -1409,7 +1419,7 @@ def set_listeners(args):
     listeners.extend(process_tunnel_listeners(args))
     return listeners
 
-def set_edge_api_proxy(args):
+def set_api_proxy(args):
     """
     Set the 'apiProxy' field in the 'edge' section of the template_vars dictionary.
 
@@ -1709,7 +1719,7 @@ def create_template(args, controller_info):
         template_vars['edge'] = set_edge(args)
         template_vars['edge']['csr']['sans'] = set_edge_csr_sans(args)
     if args.apiProxyListener or args.apiProxyUpstream:
-        template_vars['edge']['apiProxy'] = set_edge_api_proxy(args)
+        template_vars['apiProxy'] = set_api_proxy(args)
     if args.disableListeners:
         template_vars['listeners'] = set_listeners(args)
     if args.disableHealthChecks:
