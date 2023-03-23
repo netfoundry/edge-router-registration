@@ -590,10 +590,16 @@ def create_edge_router(session_token, router_name, endpoint):
     }
 
     urllib3.disable_warnings()
-    response = requests.post(url, headers=headers,
-                             json=payload,
-                             timeout=15,
-                             verify=False)
+    try:
+        response = requests.post(url, headers=headers,
+                                json=payload,
+                                timeout=15,
+                                verify=False)
+    except requests.ConnectTimeout:
+        logging.error("Unable to connect to controller: Connection Timed out")
+        sys.exit(1)
+    except requests.ConnectionError:
+        logging.error("Unable to connect to controller: Connection Error")
 
     if response.status_code == 201:
         return response.json()['data']['id']
@@ -804,7 +810,14 @@ def get_router_jwt(session_token, router_id, endpoint):
     logging.debug("Attempting to acces url: %s", url)
 
     urllib3.disable_warnings()
-    response = requests.get(url, headers=headers, timeout=15, verify=False)
+    try:
+        response = requests.get(url, headers=headers, timeout=15, verify=False)
+    except requests.ConnectTimeout:
+        logging.error("Unable to connect to controller: Connection Timed out")
+        sys.exit(1)
+    except requests.ConnectionError:
+        logging.error("Unable to connect to controller: Connection Error")
+        sys.exit(1)
 
     if response.status_code == 200:
         logging.debug("Edge Router JWT: %s", response.json()['data']['enrollmentJwt'])
@@ -861,7 +874,14 @@ def get_session_token(username, password, endpoint):
     }
 
     urllib3.disable_warnings()
-    response = requests.post(url, json=payload, timeout=15, verify=False)
+    try:
+        response = requests.post(url, json=payload, timeout=15, verify=False)
+    except requests.ConnectTimeout:
+        logging.error("Unable to connect to controller: Connection Timed out")
+        sys.exit(1)
+    except requests.ConnectionError:
+        logging.error("Unable to connect to controller: Connection Error")
+        sys.exit(1)
 
     if response.status_code == 200:
         logging.debug("Session Token: %s", response.json()['data']['token'])
@@ -900,6 +920,12 @@ def get_public_address():
         response = requests.get("https://api.ipify.org", timeout=15)
         response.raise_for_status()
         return response.text
+    except requests.ConnectTimeout:
+        logging.warning("Unable to get external ip: Connection Timed out")
+        return None
+    except requests.ConnectionError:
+        logging.warning("Unable to get external ip: Connection Error")
+        return None
     except requests.RequestException:
         return None
 
@@ -917,8 +943,15 @@ def get_ziti_controller_version(controller_url):
         logging.debug("Attempting to access %s", endpoint_url)
 
         urllib3.disable_warnings()
-        response = requests.get(endpoint_url, verify=False, timeout=15)
-        response.raise_for_status()
+        try:
+            response = requests.get(endpoint_url, verify=False, timeout=15)
+            response.raise_for_status()
+        except requests.ConnectTimeout:
+            logging.error("Unable to get controller version: Connection Timed out")
+            sys.exit(1)
+        except requests.ConnectionError:
+            logging.error("Unable to get controller version: Connection Error")
+            sys.exit(1)
 
         try:
             result = json.loads(response.text)
@@ -1131,21 +1164,25 @@ def set_identity(args):
     """
 
     if args.identityCert:
-        identity_cert = args.args.identityCert
+        identity_cert = args.identityCert
     else:
         identity_cert = f"{args.installDir}/certs/cert.pem"
+
     if args.identityServerCert:
         identity_server_cert = args.identityServerCert
     else:
         identity_server_cert = f"{args.installDir}/certs/server_cert.pem"
+
     if args.identityKey:
         identity_key = args.identityKey
     else:
         identity_key = f"{args.installDir}/certs/key.pem"
+
     if args.identityCa:
         identity_ca = args.identityCa
     else:
         identity_ca = f"{args.installDir}/certs/ca.pem"
+
     return {
         'cert': identity_cert,
         'server_cert': identity_server_cert,
@@ -1657,7 +1694,7 @@ def create_template(args, controller_info):
 
     return filled_out_template
 
-def main():
+def main(args):
     """
     Main logic
     """
@@ -1665,7 +1702,7 @@ def main():
     parser = create_parser()
 
     # get arguments passed
-    args = parser.parse_args()
+    args = parser.parse_args(args)
 
     if args.logFile:
         log_file = args.logFile
@@ -1736,4 +1773,4 @@ def main():
 
 # main
 if __name__ == '__main__':
-    main()
+    main(sys.argv[1:])
