@@ -100,14 +100,16 @@ This Python script automates the process of enrolling and configuring an OpenZit
       - Example: '0.0.0.0:1080'
 - `--apiProxyUpstream`: The hostname and port combination to the ziti-controller hosted Edge API
     - Format: 'Upstream'
-      - Example: 'mycontrollerhostname:1080'
+      - Example: --apiProxyUpstream 'mycontrollerhostname:1080'
 
 ### Link Options
 - `--linkDialers`: Link Dialers (Default: 'transport')
     - Format: 'BINDING' 'BIND'
     - Binding: The binding type ('transport')
     - Bind: The network interface used to dial the controller and router links can be ip or interface name.
-      - Example: 'transport' '0.0.0.0'
+      - Examples: 
+        - --linkDialers 'transport' '0.0.0.0'
+        - --linkDialers 'transport' 'eth0'
 
 - `--linkListeners`: Link Listener (Default: None)
     - Format: 'BINDING' 'BIND' 'ADVERTISE' 'OUTQUESIZE'
