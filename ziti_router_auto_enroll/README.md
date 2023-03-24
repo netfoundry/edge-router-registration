@@ -122,7 +122,7 @@ This Python script automates the process of enrolling and configuring an OpenZit
 ### Listeners Options
 - `--disableListeners`: Disable Listeners portion of router config
 - `--assumePublic`: Attempt to use external lookup to assign default edge listener instead of {default_gw_adapter}
-- `--edgeListeners`: Edge Binding Listener (Default: 'edge' 'tls:0.0.0.0:443' '{default_gw_adapter}:443')
+- `--edgeListeners`: Edge Binding Listener (Default: 'tls:0.0.0.0:443' '{default_gw_adapter}:443')
     - Format: 'ADDRESS' 'ADVERTISE' 'MAXQUEUEDCONNECTS' 'MAXOUTSTANDINGCONNECTS' 'CONNECTTIMEOUTMS' 'LOOKUPAPISESSIONTIMEOUT'
     - Address (required): A protocol:host:port string on which network interface to listen on. 0.0.0.0 will listen on all interfaces
     - Advertise (required): The public hostname and port combination that Ziti SDKs should connect on.
