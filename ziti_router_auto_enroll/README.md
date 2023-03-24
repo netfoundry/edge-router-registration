@@ -97,7 +97,7 @@ This Python script automates the process of enrolling and configuring an OpenZit
 ### API Proxy Options
 - `--apiProxyListener`: The interface and port that the Edge API should be served on.
     - Format: 'Listner'
-      - Example: '0.0.0.0:1080'
+      - Example: --apiProxyListener '0.0.0.0:1080'
 - `--apiProxyUpstream`: The hostname and port combination to the ziti-controller hosted Edge API
     - Format: 'Upstream'
       - Example: --apiProxyUpstream 'mycontrollerhostname:1080'
@@ -117,7 +117,7 @@ This Python script automates the process of enrolling and configuring an OpenZit
     - Bind: A protocol:host:port string on which network interface to listen on. 0.0.0.0 will listen on all interfaces
     - Advertise: The protocol:host:port combination other router should use to connect.
     - OutQueSize: The queue size for #TODO
-      - Example: 'transport' 'tls:0.0.0.0:80' 'tls:myhost:80' '16'
+      - Example: --linkListeners 'transport' 'tls:0.0.0.0:80' 'tls:myhost:80' '16'
 
 ### Listeners Options
 - `--disableListeners`: Disable Listeners portion of router config
@@ -130,20 +130,22 @@ This Python script automates the process of enrolling and configuring an OpenZit
     - MaxOutstandingConnects: The maximum number of connects that have  begun hello synchronization (1 to 1000, default 16)
     - ConnectionTimeoutMS: The number of milliseconds to wait before a hello synchronization fails and closes the connection (30ms to 60000ms, default: 1000ms)
     - LookupApiSessionTimeout: How long to wait before timing out when looking up api-sessions after client connect. Default 5 seconds.
-      - Example: 'tls:0.0.0.0:443' 'myhost:443' '1000' '16' '1000' '5'
+      - Examples: 
+        - --edgeListeners 'tls:0.0.0.0:443' 'myhost:443' '1000' '16' '1000' '5'
+        - --edgeListeners 'ws:0.0.0.0:443' 'myhost:7001'
 
 - `--proxyListeners`: Proxy Binding Listener (Default: None)
     - Format: 'ADDRESS' 'SERVICE'
     - Address: A protocol:host:port string on which network interface to listen on. 0.0.0.0 will listen on all interfaces
     - Service: The name of the ziti service to connect.
-      - Example: 'tcp:0.0.0.0:123' 'my_ntp_service'
+      - Example: --proxyListeners 'tcp:0.0.0.0:123' 'my_ntp_service'
       
 - `--tunnelListener`: Tunnel Binding Listener (Default: None)
     - Format: 'MODE' 'RESOLVER' 'LANIF'
     - Mode: Tunnel mode ('tproxy', 'host', 'proxy')
     - Resolver: A protocol:host:port string on which network interface to listen on.
     - LanIf: The lan interface to create to create tproxy rules.
-      - Example: 'tproxy' 'udp://127.0.0.1:53' 'eth0'
+      - Example: --tunnelListener 'tproxy' 'udp://127.0.0.1:53' 'eth0'
 - `--autoTunnelListener`: Automatically add a local tproxy tunneler with the {default_gw_adapter} as the local resolver and LANIf
 
 ### Web Options
@@ -153,7 +155,7 @@ This Python script automates the process of enrolling and configuring an OpenZit
     - Interface: A host:port string on which network interface to listen on. 0.0.0.0 will listen on all interfaces
     - Address: The public address that external incoming requests will be able to resolve.
     - Binding: Specifies an API to bind to this webListener. Built-in APIs are
-      - Example: 'health-check' '0.0.0.0:8081' '0.0.0.0:8081' 'health-checks'
+      - Example: --webs 'health-check' '0.0.0.0:8081' '0.0.0.0:8081' 'health-checks'
 
 ## Router Creation Options
 
