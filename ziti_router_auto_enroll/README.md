@@ -186,9 +186,17 @@ Example Json:
 ```
 {
   "controllerFabricPort": 123
+  "csrSansIp": ["1.1.1.1","2.2.2.2"],
+  "proxyListeners": [["0.0.0.0:123","my_ntp_service"],["0.0.0.0:5631","mydbconn_service"]]
 }
 ```
 Example Yaml:
 ```
 controllerFabricPort: 123
+csrSansIp:
+  - 1.1.1.1
+  - 2.2.2.2
+proxyListeners:
+  - ["0.0.0.0:123", "myntp"]
+  - ["0.0.0.0:5631", "mydb"]
 ```
