@@ -178,7 +178,10 @@ Besides passing in every argument with a --argumentName you can also use:
 
 You can pass any argument vi OS Environmental variables.  All argument are in all UPPER case.
 
-Example:  `export CONTROLLERFABRICPORT=123`
+:warning: Passing in links, listeners, tunnelers, webs is not supported.  Passing a list of lists with environment is messy. Use the json or yaml instead.
+
+Example: `export CONTROLLERFABRICPORT=6262`
+Example: `export CSRSANSDNS="name1,name2,name3"
 
 ### Using parameter file
 You can pass any argument vi paramter files.  Json or Yaml format is supported.
@@ -187,14 +190,14 @@ The file extension needs to be .json or .yaml/.yml
 Example Json:
 ```
 {
-  "controllerFabricPort": 123
+  "controllerFabricPort": 6262
   "csrSansIp": ["1.1.1.1","2.2.2.2"],
   "proxyListeners": [["0.0.0.0:123","my_ntp_service"],["0.0.0.0:5631","mydbconn_service"]]
 }
 ```
 Example Yaml:
 ```
-controllerFabricPort: 123
+controllerFabricPort: 6262
 csrSansIp:
   - 1.1.1.1
   - 2.2.2.2

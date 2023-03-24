@@ -1,3 +1,5 @@
+[![Pylint](https://github.com/netfoundry/edge-router-registration/actions/workflows/pylint.yml/badge.svg)](https://github.com/netfoundry/edge-router-registration/actions/workflows/pylint.yml)
+
 # edge-router-registration
 
 NetFoundry registration script.

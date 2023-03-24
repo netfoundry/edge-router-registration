@@ -491,7 +491,7 @@ def check_root_permissions():
     """
     if os.geteuid() >= 1:
         logging.error("This script must be run with elevated privileges, "
-                      "please use sudo or run as root")
+                      "please use 'sudo -E' or run as root")
         sys.exit(1)
 
 def check_env_vars(args, parser):
@@ -507,7 +507,11 @@ def check_env_vars(args, parser):
         if env_value is not None:
             current_argument = getattr(args, arg)
             if current_argument == parser.get_default(arg) or current_argument is None:
-                setattr(args, arg, env_value)
+                if ',' in env_value:
+                    value = env_value.split(',')
+                else:
+                    value = env_value
+                setattr(args, arg, value)
             else:
                 logging.warning("Overriding Environmental value"
                                 " for %s, with value set via cli", arg)
