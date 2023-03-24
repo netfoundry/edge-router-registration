@@ -1,6 +1,6 @@
 # Ziti Router Auto Enroll
 
-This Python script automates the process of enrolling and configuring a Ziti edge router. The script takes care of generating the configuration file, downloading binaries, handling the enrollment process, and setting up DNS settings.
+This Python script automates the process of enrolling and configuring an OpenZiti router. The script takes care of generating the configuration file, downloading binaries, handling the enrollment process, and setting up DNS settings.
 
 ## Requirements
 
@@ -22,12 +22,12 @@ This Python script automates the process of enrolling and configuring a Ziti edg
 
 `./ziti_router_auto_enroll --jwt enrollment.txt`
 
-- "Private" - This is the default edge-router configuration with the interface is that used as the default GW. This will create a edge listner. This will & only accept ziti SDK connections on port 443 & healthchecks on port 8081.
+- "Private" - This is the default edge-router configuration with the interface is that used as the default GW. This will create a edge listner. This will & only accept ziti SDK connections on port 443 & healthchecks on port 8081. "Private" meaning it's using local interface IP.
 
 
 `./ziti_router_auto_enroll --jwt enrollment.txt --assumePublic`
 
-- "Public" - This will change the default edge listner by using whatever external IP is used outbound instead of the local interface IP/name.   This also add a link listner using the same external IP. This will & accept ziti SDK connections on port 443 & other router links on port 80 & healthchecks on port 8081.
+- "Public" - This will change the default edge listner by using whatever external IP is used outbound instead of the local interface IP/name.   This also add a link listner using the same external IP. This will & accept ziti SDK connections on port 443 & other router links on port 80 & healthchecks on port 8081. "Public" meaning it's going to do an external IP lookup & use that value instead of the local interface IP.
 
 `./ziti_router_auto_enroll --jwt enrollment.txt --autoTunnelListener`
 - "Private with local Tunneler enabled" - This will change the default to add a local Tunnel listner using the the interface is that used as the default GW & will attempt to configure the local DNS so the local interface is the first resolver for the OS.
