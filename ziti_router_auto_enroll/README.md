@@ -174,6 +174,8 @@ Besides passing in every argument with a --argumentName you can also use:
   - A Parameters file
 ### Using Environmental Variables
 
+:heavy_exclamation_mark: If using environment variables make sure to use **SUDO -E**
+
 You can pass any argument vi OS Environmental variables.  All argument are in all UPPER case.
 
 Example:  `export CONTROLLERFABRICPORT=123`
