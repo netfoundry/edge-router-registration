@@ -105,18 +105,18 @@ This Python script automates the process of enrolling and configuring an OpenZit
 ### Link Options
 - `--linkDialers`: Link Dialers (Default: 'transport')
     - Format: 'BINDING' 'BIND'
-    - Binding: The binding type ('transport')
-    - Bind: The network interface used to dial the controller and router links can be ip or interface name.
+    - Binding(required): The binding type ('transport')
+    - Bind(optional): The network interface used to dial the controller and router links can be ip or interface name.
       - Examples: 
         - --linkDialers 'transport' '0.0.0.0'
         - --linkDialers 'transport' 'eth0'
 
 - `--linkListeners`: Link Listener (Default: None)
     - Format: 'BINDING' 'BIND' 'ADVERTISE' 'OUTQUESIZE'
-    - Binding: The binding type ('transport')
-    - Bind: A protocol:host:port string on which network interface to listen on. 0.0.0.0 will listen on all interfaces
-    - Advertise: The protocol:host:port combination other router should use to connect.
-    - OutQueSize: The queue size for #TODO
+    - Binding(required): The binding type ('transport')
+    - Bind(required): A protocol:host:port string on which network interface to listen on. 0.0.0.0 will listen on all interfaces
+    - Advertise(required): The protocol:host:port combination other router should use to connect.
+    - OutQueSize(optional): The queue size for #TODO
       - Example: --linkListeners 'transport' 'tls:0.0.0.0:80' 'tls:myhost:80' '16'
 
 ### Listeners Options
@@ -124,37 +124,38 @@ This Python script automates the process of enrolling and configuring an OpenZit
 - `--assumePublic`: Attempt to use external lookup to assign default edge listener instead of {default_gw_adapter}
 - `--edgeListeners`: Edge Binding Listener (Default: 'edge' 'tls:0.0.0.0:443' '{default_gw_adapter}:443')
     - Format: 'ADDRESS' 'ADVERTISE' 'MAXQUEUEDCONNECTS' 'MAXOUTSTANDINGCONNECTS' 'CONNECTTIMEOUTMS' 'LOOKUPAPISESSIONTIMEOUT'
-    - Address: A protocol:host:port string on which network interface to listen on. 0.0.0.0 will listen on all interfaces
-    - Advertise: The public hostname and port combination that Ziti SDKs should connect on.
-    - MaxQueuedConnects: Set the maximum number of connect requests that are buffered and waiting to be acknowledged (1 to 5000, default 1000)
-    - MaxOutstandingConnects: The maximum number of connects that have  begun hello synchronization (1 to 1000, default 16)
-    - ConnectionTimeoutMS: The number of milliseconds to wait before a hello synchronization fails and closes the connection (30ms to 60000ms, default: 1000ms)
-    - LookupApiSessionTimeout: How long to wait before timing out when looking up api-sessions after client connect. Default 5 seconds.
+    - Address(required): A protocol:host:port string on which network interface to listen on. 0.0.0.0 will listen on all interfaces
+    - Advertise(required): The public hostname and port combination that Ziti SDKs should connect on.
+    - MaxQueuedConnects(optional): Set the maximum number of connect requests that are buffered and waiting to be acknowledged (1 to 5000, default 1000)
+    - MaxOutstandingConnects(optional): The maximum number of connects that have  begun hello synchronization (1 to 1000, default 16)
+    - ConnectionTimeoutMS(optional): The number of milliseconds to wait before a hello synchronization fails and closes the connection (30ms to 60000ms, default: 1000ms)
+    - LookupApiSessionTimeout(optional): How long to wait before timing out when looking up api-sessions after client connect. Default 5 seconds.
       - Examples: 
         - --edgeListeners 'tls:0.0.0.0:443' 'myhost:443' '1000' '16' '1000' '5'
         - --edgeListeners 'ws:0.0.0.0:443' 'myhost:7001'
 
 - `--proxyListeners`: Proxy Binding Listener (Default: None)
     - Format: 'ADDRESS' 'SERVICE'
-    - Address: A protocol:host:port string on which network interface to listen on. 0.0.0.0 will listen on all interfaces
-    - Service: The name of the ziti service to connect.
+    - Address(required): A protocol:host:port string on which network interface to listen on. 0.0.0.0 will listen on all interfaces
+    - Service(required): The name of the ziti service to connect.
       - Example: --proxyListeners 'tcp:0.0.0.0:123' 'my_ntp_service'
       
 - `--tunnelListener`: Tunnel Binding Listener (Default: None)
     - Format: 'MODE' 'RESOLVER' 'LANIF'
-    - Mode: Tunnel mode ('tproxy', 'host', 'proxy')
-    - Resolver: A protocol:host:port string on which network interface to listen on.
-    - LanIf: The lan interface to create to create tproxy rules.
+    - Mode(required): Tunnel mode ('tproxy', 'host', 'proxy')
+    - Resolver(optional): A protocol:host:port string on which network interface to listen on.
+    - LanIf(optional): The lan interface to create to create tproxy rules.
       - Example: --tunnelListener 'tproxy' 'udp://127.0.0.1:53' 'eth0'
+      - Note: 'tproxy' requires all three options
 - `--autoTunnelListener`: Automatically add a local tproxy tunneler with the {default_gw_adapter} as the local resolver and LANIf
 
 ### Web Options
 - `--webs`: Web Options (Default: 'health-check' '0.0.0.0:8081' '0.0.0.0:8081' 'health-checks')
     - Format: 'NAME' 'INTERFACE' 'ADDRESS' 'BINDING'
-    - Name: Provides a name for this listener, used for logging output. Not required to be unique, but is highly suggested.
-    - Interface: A host:port string on which network interface to listen on. 0.0.0.0 will listen on all interfaces
-    - Address: The public address that external incoming requests will be able to resolve.
-    - Binding: Specifies an API to bind to this webListener. Built-in APIs are
+    - Name(required): Provides a name for this listener, used for logging output. Not required to be unique, but is highly suggested.
+    - Interface(required): A host:port string on which network interface to listen on. 0.0.0.0 will listen on all interfaces
+    - Address(required): The public address that external incoming requests will be able to resolve.
+    - Binding(required): Specifies an API to bind to this webListener. Built-in APIs are
       - Example: --webs 'health-check' '0.0.0.0:8081' '0.0.0.0:8081' 'health-checks'
 
 ## Router Creation Options
