@@ -1,6 +1,6 @@
 # Ziti Router Auto Enroll
 
-This Python script automates the process of enrolling and configuring an OpenZiti router. The script takes care of generating the configuration file, downloading binaries, handling the enrollment process, and setting up DNS settings.
+This Python script automates the process of downloading, configuring and enrolling an OpenZiti router. The script takes care of generating the configuration file with custom options, downloading binaries from github, handling the enrollment process, and setting up local DNS settings if needed.
 
 ## Requirements
 
