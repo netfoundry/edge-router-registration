@@ -20,7 +20,7 @@ This Python script automates the process of downloading, configuring and enrolli
 
 ## Examples
 
-`./ziti_router_auto_enroll --jwt enrollment.txt`
+`./ziti_router_auto_enroll {paste JWT here}` OR `./ziti_router_auto_enroll --jwt enrollment.txt`
 
 - "Private" - This is the default edge-router configuration with the interface is that used as the default GW. This will create a edge listner. This will & only accept ziti SDK connections on port 443 & healthchecks on port 8081. "Private" meaning it's using local interface IP.
 
