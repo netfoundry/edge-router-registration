@@ -68,7 +68,7 @@ Enabling this setting makes the script attempt to lookup the external IP address
 
 All NetFoundry Edge Router are configured with a local resolver(tunneler). So port 53/tcp & 53/udp are open from the local subnet.
 
-HealthChecks are also enabled & listen so port 8081/tcp is open from the local subnet
+HealthChecks are also enabled & listen so port 8081/tcp is open from the local subnet.
 
 ### Salt Minion configuration
 
@@ -77,6 +77,10 @@ NetFoundry uses salt-stack to push updates to EdgeRouters. The proxy connections
 ### NFhelp
 
 Once the OpenZiti router registration & the salt-stack minions is configured, the script will download the latest version of the [nfhelp menu](https://github.com/netfoundry/edge-router-nfhelp)
+
+### EBPF enabling
+
+Ability to enable the [ebpf tproxy slicer](https://github.com/netfoundry/ebpf-tproxy-splicer) configuration.
 
 ## Usage
 
@@ -88,7 +92,7 @@ This scrip allows some options for the NetFoundry Edge-Router registration proce
 - An optional `--logFile` argument to specify the log file (default: router_registration.log)
 - An optional `--salt` flag to skip salt-stack setup
 - An optional `--skip-fw` flag to skip applying firewall rules
-- An optional `--enable_ebpf` flag to enable eBPF
+- An optional `--ebpf` flag to enable eBPF
 - A `-v/--version` flag to display the current version of the tool
 
 Additionally, the function allows for manual configuration of edge/fabric and tunnel components through the following arguments:
