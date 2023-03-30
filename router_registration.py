@@ -140,11 +140,13 @@ def check_root_permissions():
                       "please use sudo or run as root")
         sys.exit(1)
 
-def check_ipv4_interface_count():
+def check_ipv4_interface_count(parser):
     """
     Check the number of IPv4 network interfaces on the local machine,
     excluding the loopback interface. Exits the program with an error message
     if more than one interface is found.
+
+    :param parser: The argparse.ArgumentParser instance to add the arguments to.
     """
     network_interfaces = psutil.net_if_addrs()
     ipv4_interfaces = 0
@@ -158,7 +160,9 @@ def check_ipv4_interface_count():
                 break
     logging.debug("Found %s interface(s)", ipv4_interfaces)
     if ipv4_interfaces > 1:
-        logging.error("More than one network interface was found. Please use the -e")
+        logging.error("Found more than one network interface/IP address."
+                      " Please use the flags -e/b and -i for manual configuration")
+        parser.print_help()
         sys.exit(1)
 
 def create_netfoundry_tuning_file():
@@ -779,7 +783,7 @@ def main():
 
     # check the number of interfaces
     if not args.edge:
-        check_ipv4_interface_count()
+        check_ipv4_interface_count(parser)
 
     if args.ebpf:
         check_memory(args.ebpf)
