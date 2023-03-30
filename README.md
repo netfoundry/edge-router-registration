@@ -4,35 +4,98 @@
 
 NetFoundry registration script.
 
-This script is made up of two parts.  
+This script is made up of several parts.  
 
 1. A bootstrap script
-1. The main registration script
+1. The OpenZiti Router enroll script - ziti_router_auto_enroll
+1. The main registration script - router_registration
 
 ## Bootstrap
 
-The job of the bootstrap script is the download the latest version of the main script at run time, if the main doesn't exist or is older than 24hrs.
+The job of the bootstrap script is the download the latest version of the main script at run time, 
+if the main doesn't exist or is older than 12hrs.
+
+## OpenZiti Router auto enroll
+
+The OpenZiti Regiration is a generic OpenZiti router registration script that can handle very custom configurations.
+See the [ReadMe](https://github.com/netfoundry/edge-router-registration)
+## Router Registration
+
+The registration script is to provide an easy way for a end user to register the NetFoundry Edge Router using a OTP(one time password).
+
+The registration process covers the following items: 
+
+* Connects to NetFoundry to get information about the EdgeRouter using the OTP
+* Checks connectivity to the controller
+* Gathers information about the local machine & runs the ziti router enrollment
+* Configures UFW rules to allow inbound ports based on configuration
+* Configures a local salt-stack minion to work with NetFoundry
+* Downloads the latest version of the [nfhelp menu](https://github.com/netfoundry/edge-router-nfhelp)
 
 
-## Registration
+### Connect to NetFoundry
+The script uses the OTP to reach out to NetFoundry & get information about the ER that's about to be
+registered. The most important piece being the JWT for the ziti router.
 
-The job of the registration script is to provide an easy way for a end user to register the NetFoundry Edge Router using a OTP(one time password).
+### Connectivity Checks
+Part of having a healty registration is ensuring the communication between the ER that's about to 
+attempt registration & the controller.  This script will check if it's able to reach ports 80, 443 & 6262
+on the controller.  If any of those ports are unreachable, then the registration will fail. 
 
-The registration script is made of several parts.
+In an attempt to verify connectivity this script will also check if the controller name returned from the OTP
+matches the certificate when connecting to the controller.  If the reponse doesn't have the correct name within
+the certificate, it most likey means there's a proxy is the mix & the registration might or might not succeed, but
+the ziti router will for sure NOT function.
 
-* OS configuration
-* NetFoundry configuration
-* OpenZiti registration
+### Gather local info & run enrollment
+Once the registration has information from NetFoundry it combines that with the local machine configuration to create
+a command that will run the ziti_router_auto_enroll script(imported with python, not seperate binary).
 
+NetFoundry enabled certain features by default:
+  * Edge enabled: The edge portion of the router configuation is filled out with either local information or through input from the user.
+  * Tunneler enabled: In order to run the edge-route in tunneler enabled modes, the OS needs to be configured to have the OpenZiti resolver as the first resolver.  This action requires a configuration be created for systemd-resolved. This configuration is depended on how the OS is configured, specifically what IP address is assigned & what interfaces exist.
+  * HealthChecks enabled: The ctrlPingCheck health check is enabled & allows you to monitor the control plane connection to the controller.
+  * proxyServices:  Builds two proxy services to allow the salt-stack minion commnunication.
 
-### OS configuration
+### UFW Rules
 
-In order to run the edge-route in tunneler enabled modes, the OS needs to be configured to have the OpenZiti resolver as the first resolver.  This action requires a configuration be created for systemd-resolved. This configuration is depended on how the OS is configured, specifically what IP address is assigned & what interfaces exist.
+The **default setting** for an ER is **NOT** going to advertise itself for inbound **fabric** connections, only **edge** connections.  
+In this setting, the edge(443/tcp) is still allowed inbound, but only from the local subnet.
 
-### NetFoundry configuration
+The NetFoundry console allows you to select if the ER is going to have "Link Listener".  
 
-The NetFoundry console allows you to select if the ER is going to have "Link Listener".  Enabling this setting make the script attempt to lookup the external IP address & use it to advertise itself for other ER in the fabric mesh to connect to it.  This implies the ER should be publicaly accessible with inbound FW rules open for the fabric(80/tcp) & edge(443/tcp). The **default setting is disabled** which implies the ER is **NOT** going to advertise itself for inbound fabric connections & not publicaly accessible.  In this setting, the edge(443/tcp) is still allowed inbound, but only from the local subnet.
+Enabling this setting makes the script attempt to lookup the external IP address & use it to advertise itself for other ERs in the fabric mesh to connect to it.  This implies the ER should be publicaly accessible with inbound FW rules open for the fabric(80/tcp) & edge(443/tcp) from anywere.
 
-### OpenZiti registration
+All NetFoundry Edge Router are configured with a local resolver(tunneler). So port 53/tcp & 53/udp are open from the local subnet.
 
-  The script accepts a JWT from NetFoundry & uses it to peform the OpenZiti *enrollment* process for the ER.
+HealthChecks are also enabled & listen so port 8081/tcp is open from the local subnet
+
+### Salt Minion configuration
+
+NetFoundry uses salt-stack to push updates to EdgeRouters. The proxy connections are open on the local loopback & use ports 4505/tcp & 4506/tcp.
+
+### NFhelp
+
+Once the OpenZiti router registration & the salt-stack minions is configured, the script will download the latest version of the [nfhelp menu](https://github.com/netfoundry/edge-router-nfhelp)
+
+## Usage
+
+This scrip allows some options for the NetFoundry Edge-Router registration process. The available options include:
+
+- A required registration key
+- An optional `-f/--force` flag to forcefully proceed with re-enrollment
+- An optional `-l/--logLevel` argument to set the logging level (default: INFO)
+- An optional `--logFile` argument to specify the log file (default: router_registration.log)
+- An optional `--salt` flag to skip salt-stack setup
+- An optional `--skip-fw` flag to skip applying firewall rules
+- An optional `--enable_ebpf` flag to enable eBPF
+- A `-v/--version` flag to display the current version of the tool
+
+Additionally, the function allows for manual configuration of edge/fabric and tunnel components through the following arguments:
+
+- `--edge`: IP or DNS name for the edge component
+  - Will override the automatic detection of the default GW interface & take a hostname or IP address.  This information cannot be verified since it could be masked.
+- `--tunnel_ip`: IP address for the tunnel component (if enabled)
+  - Will override the automatic detection of the default GW interface & take an IP Address.  The IP must be assiged to one of the local interfaces, since this will listen for incoming traffic.
+- `--fabric`: IP or DNS name for the fabric component (if enabled)
+  - Will override the automatic detection of the default GW interface & take a hostname or IP address.  This information cannot be verified since it could be masked.
