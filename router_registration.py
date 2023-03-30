@@ -559,7 +559,7 @@ def handle_ziti_router_auto_enroll(args, router_info, enrollment_commands):
     # run enrollment
     ziti_router_auto_enroll.main(enrollment_commands)
 
-    # for backward compatability with existing NetFoundry deployments 
+    # for backward compatability with existing NetFoundry deployments
     target = "/opt/netfoundry/ziti/ziti-router/ziti"
     source = "/opt/netfoundry/ziti/ziti"
     os.rename(target, source)
@@ -780,7 +780,7 @@ def main():
     # check the number of interfaces
     if not args.edge:
         check_ipv4_interface_count()
-    
+
     if args.ebpf:
         check_memory(args.ebpf)
 
