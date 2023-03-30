@@ -366,10 +366,10 @@ def get_mop_router_information(endpoint_url, registration_key):
         http_code = response.status_code
         logging.debug('HTTP Response STATUS CODE: %s', http_code)
     except requests.exceptions.ConnectionError as exception_result:
-        logging.debug('An issue occurred while trying to connect: %s', exception_result)
+        logging.error('An issue occurred while trying to connect: %s', exception_result)
         sys.exit(1)
     except requests.exceptions.Timeout as timeout_exception:
-        logging.debug('Timed out trying to reach MOP: %s', timeout_exception)
+        logging.error('Timed out trying to reach MOP: %s', timeout_exception)
         sys.exit(1)
     if response.status_code == 200:
         if json.loads(response.text)['edgeRouter']['jwt'] is None:
