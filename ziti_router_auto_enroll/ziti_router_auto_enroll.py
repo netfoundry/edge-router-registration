@@ -1470,7 +1470,7 @@ def setup_logging(logfile, loglevel=logging.INFO):
     """
     class CustomFormatter(logging.Formatter):
         """
-        Return a custom color for the message if the level is higher than warning.
+        Return a custom color for the message if the level is higher then warning.
         """
         def format(self, record):
             if record.levelno == logging.WARNING:
