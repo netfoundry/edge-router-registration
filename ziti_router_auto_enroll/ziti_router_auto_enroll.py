@@ -1470,7 +1470,7 @@ def setup_logging(logfile, loglevel=logging.INFO):
     """
     class CustomFormatter(logging.Formatter):
         """
-        Return a custom color for the message if the level is higher then warning.
+        Return a custom color for the message if the level is higher than warning.
         """
         def format(self, record):
             if record.levelno == logging.WARNING:
@@ -1499,11 +1499,20 @@ def setup_logging(logfile, loglevel=logging.INFO):
     console_handler = logging.StreamHandler()
     console_handler.setLevel(loglevel)
 
-    # Create a formatter with custom date and time format, and add it to both handlers
-    formatter = CustomFormatter('%(asctime)s-%(levelname)s-%(message)s',
-                                datefmt='%Y-%m-%d-%H:%M:%S')
-    file_handler.setFormatter(formatter)
-    console_handler.setFormatter(formatter)
+    # Create formatters with custom date and time format, and add them to the appropriate handlers
+    file_formatter = CustomFormatter('%(asctime)s-%(levelname)s-%(message)s',
+                                     datefmt='%Y-%m-%d-%H:%M:%S')
+    file_handler.setFormatter(file_formatter)
+
+    console_formatter_info = CustomFormatter('%(message)s')
+    console_formatter_warning_error = CustomFormatter('%(levelname)s-%(message)s')
+
+    def console_format(record):
+        if record.levelno == logging.INFO:
+            return console_formatter_info.format(record)
+        return console_formatter_warning_error.format(record)
+
+    console_handler.format = console_format
 
     # Add the handlers to the logger
     logger.addHandler(file_handler)
@@ -1750,8 +1759,9 @@ def main(args):
         program_name = (os.path.basename(__file__)).split(".")[0]
         log_file = f"{program_name}.log"
 
-    # setup logging
-    setup_logging(log_file, args.logLevel)
+    # setup logging only if calling from script
+    if __name__ == '__main__':
+        setup_logging(log_file, args.logLevel)
 
     # check environment for args
     check_env_vars(args, parser)
