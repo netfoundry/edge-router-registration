@@ -687,7 +687,7 @@ def decode_jwt(jwt_string):
 
 def download_file(download_url):
     """
-    Download a file from the specified URL and save it locally as 'ziti.tar.gz'.
+    Download a file from the specified URL and save it locally as 'download_{timestamp}.tar.gz'.
 
     :param download_url: The URL of the file to download.
     :return: The name of the downloaded file.
