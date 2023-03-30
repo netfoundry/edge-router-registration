@@ -176,9 +176,9 @@ ExecStartPre=-/usr/sbin/iptables -F NF-INTERCEPT -t mangle
 ExecStartPre=-/opt/netfoundry/ebpf/objects/etables -F -r
 ExecStartPre=-/opt/netfoundry/ebpf/scripts/tproxy_splicer_startup.sh
 {% if single_binary -%}
-ExecStart={{ install_dir}}/ziti router run {{ install_dir}}/config.yaml
+ExecStart={{ install_dir }}/ziti router run {{ install_dir }}/config.yml
 {%- else -%}
-ExecStart={{ install_dir}}/ziti-router run {{ install_dir}}/config.yaml
+ExecStart={{ install_dir }}/ziti-router run {{ install_dir }}/config.yml
 {%- endif %}
 Restart=always
 RestartSec=2
@@ -736,14 +736,14 @@ def enroll_ziti(jwt_string, install_dir):
     if os.path.isfile(f"{install_dir}/ziti-router"):
         registration_command = [f"{install_dir}/ziti-router",
                                 'enroll',
-                                f"{install_dir}/config.yaml",
+                                f"{install_dir}/config.yml",
                                 '--jwt',
                                 jwt_path]
     else:
         registration_command = [f"{install_dir}/ziti",
                                 'router',
                                 'enroll',
-                                f"{install_dir}/config.yaml",
+                                f"{install_dir}/config.yml",
                                 '--jwt',
                                 jwt_path]
 
@@ -1812,7 +1812,7 @@ def main(args):
 
     # write config
     logging.info("Creating config file")
-    create_file(name='config.yaml', path=args.installDir, content=config)
+    create_file(name='config.yml', path=args.installDir, content=config)
 
     # do enrollment
     enroll_ziti(jwt_string, args.installDir)
