@@ -231,9 +231,9 @@ def create_parser():
                         default=True)
     parser.add_argument('--downloadUrl',
                         help='Specify bundle to download')
-    parser.add_argument('--ebpf', type=str,
+    parser.add_argument('--diverter', type=str,
                         choices=['small', 'medium', 'large'],
-                        help='Enable ebpf of certain size')
+                        help='Enable diverter of certain size')
     parser.add_argument('-v', '--version',
                         action='version',
                         version=__version__)
@@ -248,20 +248,20 @@ def create_parser():
                        help='IP or DNS name for fabric component(if enabled)')
     return parser
 
-def ebpf_add(install_size):
+def diverter_add(install_size):
     """
-    Download, install & initialize setup of the ebpf(tproxy_slicer)
+    Download, install & initialize setup of the diverter(tproxy_slicer)
 
-    :param install_size: The size of ebpf slicer to download/install
+    :param install_size: The size of diverter slicer to download/install
     """
-    ebpf_url = ("https://github.com/netfoundry/ebpf-tproxy-splicer/" +
+    diverter_url = ("https://github.com/netfoundry/ebpf-tproxy-splicer/" +
                 "releases/latest/download/tproxy_splicer_" +
                 install_size)
 
     try:
-        logging.info("Downloading ebpf")
+        logging.info("Downloading diverter")
         file_name = "tproxy_slicer.tar.gz"
-        response = requests.get(ebpf_url, stream=True, timeout=60)
+        response = requests.get(diverter_url, stream=True, timeout=60)
 
         total_size = int(response.headers.get("content-length", 0))
         block_size = 1024  # 1 Kibibyte
@@ -276,39 +276,39 @@ def ebpf_add(install_size):
     except requests.exceptions.ConnectionError as exception_result:
         logging.warning('An issue occurred while trying to connect: %s', exception_result)
     except requests.exceptions.Timeout as timeout_exception:
-        logging.warning('Timed out trying to download ebpf %s', timeout_exception)
+        logging.warning('Timed out trying to download diverter %s', timeout_exception)
 
-    logging.info("Extracting ebpf")
-    ebpf_install_dir="/opt/netfoundry/ebpf"
+    logging.info("Extracting diverter")
+    diverter_install_dir="/opt/netfoundry/ebpf"
     try:
-        if not os.path.isdir(ebpf_install_dir):
-            os.mkdir(ebpf_install_dir)
+        if not os.path.isdir(diverter_install_dir):
+            os.mkdir(diverter_install_dir)
         with tarfile.open(file_name) as download_file:
-            download_file.extractall(path=ebpf_install_dir)
+            download_file.extractall(path=diverter_install_dir)
         os.remove(file_name)
     except OSError as exceptions:
-        logging.warning("Unable to install ebpf: %s", exceptions)
+        logging.warning("Unable to install diverter: %s", exceptions)
 
-    logging.info("Running ebpf setup")
+    logging.info("Running diverter setup")
     try:
-        subprocess.run([f"{ebpf_install_dir}/scripts/tproxy_splicer_startup.sh",'--initial-setup'],
+        subprocess.run([f"{diverter_install_dir}/scripts/tproxy_splicer_startup.sh",'--initial-setup'],
                        check=True)
     except subprocess.CalledProcessError as error:
-        logging.warning("Unable to run ebpf setup: %s", error)
+        logging.warning("Unable to run diverter setup: %s", error)
 
-def ebpf_remove():
+def diverter_remove():
     """
-    Revert & cleanup an existing instance of ebpf
+    Revert & cleanup an existing instance of diverter
     """
-    ebpf_install_dir = "/opt/netfoundry/ebpf"
-    if os.path.isfile(f"{ebpf_install_dir}/scripts/tproxy_splicer_startup.sh"):
-        logging.info("Cleaning up ebpf")
+    diverter_install_dir = "/opt/netfoundry/ebpf"
+    if os.path.isfile(f"{diverter_install_dir}/scripts/tproxy_splicer_startup.sh"):
+        logging.info("Cleaning up diverter")
         try:
-            subprocess.run([f"{ebpf_install_dir}/scripts/tproxy_splicer_startup.sh",
+            subprocess.run([f"{diverter_install_dir}/scripts/tproxy_splicer_startup.sh",
                             '--revert-tproxy'],
                         check=True)
         except subprocess.CalledProcessError as error:
-            logging.warning("Unable to run ebpf cleanup: %s", error)
+            logging.warning("Unable to run diverter cleanup: %s", error)
 
 def get_interface_by_ip(ip_address):
     """
@@ -338,7 +338,7 @@ def check_memory(size):
 
     :return (int): The total memory size in gigabytes, rounded to the nearest integer.
     """
-    logging.debug("Checking Memory for EBPF")
+    logging.debug("Checking Memory for diverter")
     mem_info = psutil.virtual_memory()
     mem_size_gb = mem_info.total / (1024 ** 3)  # Convert bytes to gigabytes
     memory_size = round(mem_size_gb)
@@ -347,7 +347,7 @@ def check_memory(size):
     required_memory = size_requirements[size]
 
     if memory_size < required_memory:
-        logging.error("The system doesn't meet the requirement for the size ebpf chosen")
+        logging.error("The system doesn't meet the requirement for the size diverter chosen")
         logging.error("%s - requires %sGB or more", size, required_memory)
         sys.exit(1)
 
@@ -785,8 +785,8 @@ def main():
     if not args.edge:
         check_ipv4_interface_count(parser)
 
-    if args.ebpf:
-        check_memory(args.ebpf)
+    if args.diverter:
+        check_memory(args.diverter)
 
     # set the ufw_save file used to track ufw rules created
     ufw_save_file='/opt/netfoundry/ziti/ziti-router/ufw_save_file.txt'
@@ -801,8 +801,9 @@ def main():
         logging.info("Forcing re-registration, running cleanup first")
         ufw_remove_rules(ufw_save_file)
         salt_stack_remove()
-        ebpf_remove()
-        os.remove("/opt/netfoundry/ziti/ziti-router/ziti")
+        diverter_remove()
+        if os.path.exists("/opt/netfoundry/ziti/ziti-router/ziti"):
+            os.remove("/opt/netfoundry/ziti/ziti-router/ziti")
 
     # os tunning
     create_netfoundry_tuning_file()
@@ -831,9 +832,9 @@ def main():
     if args.salt:
         salt_stack_add(router_info)
 
-    # enable ebpf
-    if args.ebpf:
-        ebpf_add(args.ebpf)
+    # enable diverter
+    if args.diverter:
+        diverter_add(args.diverter)
 
 
     logging.info("\033[0;35mRegistration Successful\033[0m")
