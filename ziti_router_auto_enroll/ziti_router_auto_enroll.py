@@ -1376,7 +1376,7 @@ def set_controller_info(args, jwt_info):
     controller_info = {
         "scheme": controller_url.scheme,
         "hostname": controller_hostname,
-        "mgmt_port": args.controllerMgmtPort,
+        "mgmt_port": controller_url.port,
         "fabric_port": args.controllerFabricPort
     }
 
