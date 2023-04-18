@@ -1699,9 +1699,8 @@ def tunneler_enabled(args):
     """
     if args.tunnelListener or args.autoTunnelListener:
         return True
-    else:
-        return False
-    
+    return False
+
 def process_tunnel_listener_options(listener, auto_configure=False):
     """
     Process tunnel listener options.

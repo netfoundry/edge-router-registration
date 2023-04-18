@@ -291,7 +291,8 @@ def diverter_add(install_size):
 
     logging.info("Running diverter setup")
     try:
-        subprocess.run([f"{diverter_install_dir}/scripts/tproxy_splicer_startup.sh",'--initial-setup'],
+        subprocess.run([f"{diverter_install_dir}/scripts/tproxy_splicer_startup.sh",
+                        '--initial-setup'],
                        check=True)
     except subprocess.CalledProcessError as error:
         logging.warning("Unable to run diverter setup: %s", error)
