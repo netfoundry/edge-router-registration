@@ -176,9 +176,9 @@ ExecStartPre=-/usr/sbin/iptables -F NF-INTERCEPT -t mangle
 ExecStartPre=-/opt/netfoundry/ebpf/objects/etables -F -r
 ExecStartPre=-/opt/netfoundry/ebpf/scripts/tproxy_splicer_startup.sh
 {% if single_binary -%}
-ExecStart={{ install_dir}}/ziti router run {{ install_dir}}/config.yaml
+ExecStart={{ install_dir }}/ziti router run {{ install_dir }}/config.yml
 {%- else -%}
-ExecStart={{ install_dir}}/ziti-router run {{ install_dir}}/config.yaml
+ExecStart={{ install_dir }}/ziti-router run {{ install_dir }}/config.yml
 {%- endif %}
 Restart=always
 RestartSec=2
@@ -584,7 +584,7 @@ def create_file(name, path, content="", permissions=0o644):
 
     return full_name_path
 
-def create_edge_router(session_token, router_name, endpoint):
+def create_edge_router(session_token, router_name, endpoint, enable_tunneler):
     """
     Creates a new edge router using the session token.
 
@@ -599,9 +599,10 @@ def create_edge_router(session_token, router_name, endpoint):
         "zt-session": session_token
     }
     payload = {
-        "name": router_name
+        "name": router_name,
+        'isTunnelerEnabled': enable_tunneler
     }
-
+    logging.debug("TunnelerEnabled: %s", enable_tunneler)
     urllib3.disable_warnings()
     try:
         response = requests.post(url, headers=headers,
@@ -687,7 +688,7 @@ def decode_jwt(jwt_string):
 
 def download_file(download_url):
     """
-    Download a file from the specified URL and save it locally as 'ziti.tar.gz'.
+    Download a file from the specified URL and save it locally as 'download_{timestamp}.tar.gz'.
 
     :param download_url: The URL of the file to download.
     :return: The name of the downloaded file.
@@ -736,14 +737,14 @@ def enroll_ziti(jwt_string, install_dir):
     if os.path.isfile(f"{install_dir}/ziti-router"):
         registration_command = [f"{install_dir}/ziti-router",
                                 'enroll',
-                                f"{install_dir}/config.yaml",
+                                f"{install_dir}/config.yml",
                                 '--jwt',
                                 jwt_path]
     else:
         registration_command = [f"{install_dir}/ziti",
                                 'router',
                                 'enroll',
-                                f"{install_dir}/config.yaml",
+                                f"{install_dir}/config.yml",
                                 '--jwt',
                                 jwt_path]
 
@@ -1375,7 +1376,7 @@ def set_controller_info(args, jwt_info):
     controller_info = {
         "scheme": controller_url.scheme,
         "hostname": controller_hostname,
-        "mgmt_port": args.controllerMgmtPort,
+        "mgmt_port": controller_url.port,
         "fabric_port": args.controllerFabricPort
     }
 
@@ -1499,11 +1500,20 @@ def setup_logging(logfile, loglevel=logging.INFO):
     console_handler = logging.StreamHandler()
     console_handler.setLevel(loglevel)
 
-    # Create a formatter with custom date and time format, and add it to both handlers
-    formatter = CustomFormatter('%(asctime)s-%(levelname)s-%(message)s',
-                                datefmt='%Y-%m-%d-%H:%M:%S')
-    file_handler.setFormatter(formatter)
-    console_handler.setFormatter(formatter)
+    # Create formatters with custom date and time format, and add them to the appropriate handlers
+    file_formatter = CustomFormatter('%(asctime)s-%(levelname)s-%(message)s',
+                                     datefmt='%Y-%m-%d-%H:%M:%S')
+    file_handler.setFormatter(file_formatter)
+
+    console_formatter_info = CustomFormatter('%(message)s')
+    console_formatter_warning_error = CustomFormatter('%(levelname)s-%(message)s')
+
+    def console_format(record):
+        if record.levelno == logging.INFO:
+            return console_formatter_info.format(record)
+        return console_formatter_warning_error.format(record)
+
+    console_handler.format = console_format
 
     # Add the handlers to the logger
     logger.addHandler(file_handler)
@@ -1592,7 +1602,8 @@ def process_jwt(args, parser):
                                           controller_url)
         router_id = create_edge_router(session_token,
                                        args.routerName,
-                                       controller_url)
+                                       controller_url,
+                                       tunneler_enabled(args))
         router_jwt = get_router_jwt(session_token,
                                     router_id,
                                     controller_url)
@@ -1679,6 +1690,17 @@ def process_tunnel_listeners(args):
         tunnel_listeners.append(listener_values)
     return tunnel_listeners
 
+def tunneler_enabled(args):
+    """
+    Check if tunneler should be enabled.
+
+    :param args: Parsed command line arguments.
+    :return: true if we need to enable tunneler on the router.
+    """
+    if args.tunnelListener or args.autoTunnelListener:
+        return True
+    return False
+
 def process_tunnel_listener_options(listener, auto_configure=False):
     """
     Process tunnel listener options.
@@ -1750,8 +1772,9 @@ def main(args):
         program_name = (os.path.basename(__file__)).split(".")[0]
         log_file = f"{program_name}.log"
 
-    # setup logging
-    setup_logging(log_file, args.logLevel)
+    # setup logging only if calling from script
+    if __name__ == '__main__':
+        setup_logging(log_file, args.logLevel)
 
     # check environment for args
     check_env_vars(args, parser)
@@ -1802,7 +1825,7 @@ def main(args):
 
     # write config
     logging.info("Creating config file")
-    create_file(name='config.yaml', path=args.installDir, content=config)
+    create_file(name='config.yml', path=args.installDir, content=config)
 
     # do enrollment
     enroll_ziti(jwt_string, args.installDir)

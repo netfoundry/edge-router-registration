@@ -9,3 +9,4 @@ pyyaml
 colorama
 jinja2
 distro
+cryptography
