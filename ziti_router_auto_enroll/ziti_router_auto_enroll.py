@@ -584,7 +584,7 @@ def create_file(name, path, content="", permissions=0o644):
 
     return full_name_path
 
-def create_edge_router(session_token, router_name, endpoint):
+def create_edge_router(session_token, router_name, endpoint, enable_tunneler):
     """
     Creates a new edge router using the session token.
 
@@ -599,9 +599,10 @@ def create_edge_router(session_token, router_name, endpoint):
         "zt-session": session_token
     }
     payload = {
-        "name": router_name
+        "name": router_name,
+        'isTunnelerEnabled': enable_tunneler
     }
-
+    logging.debug("TunnelerEnabled: %s", enable_tunneler)
     urllib3.disable_warnings()
     try:
         response = requests.post(url, headers=headers,
@@ -630,7 +631,7 @@ def create_parser():
 
     :return: A Namespace containing arguments
     """
-    __version__ = '1.0.0'
+    __version__ = '1.1.0'
     parser = argparse.ArgumentParser()
 
     add_general_arguments(parser, __version__)
@@ -1375,7 +1376,7 @@ def set_controller_info(args, jwt_info):
     controller_info = {
         "scheme": controller_url.scheme,
         "hostname": controller_hostname,
-        "mgmt_port": args.controllerMgmtPort,
+        "mgmt_port": controller_url.port,
         "fabric_port": args.controllerFabricPort
     }
 
@@ -1601,7 +1602,8 @@ def process_jwt(args, parser):
                                           controller_url)
         router_id = create_edge_router(session_token,
                                        args.routerName,
-                                       controller_url)
+                                       controller_url,
+                                       tunneler_enabled(args))
         router_jwt = get_router_jwt(session_token,
                                     router_id,
                                     controller_url)
@@ -1688,6 +1690,18 @@ def process_tunnel_listeners(args):
         tunnel_listeners.append(listener_values)
     return tunnel_listeners
 
+def tunneler_enabled(args):
+    """
+    Check if tunneler should be enabled.
+
+    :param args: Parsed command line arguments.
+    :return: true if we need to enable tunneler on the router.
+    """
+    if args.tunnelListener or args.autoTunnelListener:
+        return True
+    else:
+        return False
+    
 def process_tunnel_listener_options(listener, auto_configure=False):
     """
     Process tunnel listener options.
