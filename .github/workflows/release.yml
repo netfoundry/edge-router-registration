@@ -26,7 +26,7 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
     - name: Use pyinstall to create router_registration_bootstrap distribution binary
-      run: pyinstaller -F router_registration_bootstrap.py
+      run: cp ziti_router_auto_enroll/ziti_router_auto_enroll.py .; pyinstaller -F router_registration_bootstrap.py
     - name: Use pyinstall to create router_registration distribution binary
       run: pyinstaller -F router_registration.py      
     - name: Use pyinstall to create ziti_router_auto_enroll distribution binary
