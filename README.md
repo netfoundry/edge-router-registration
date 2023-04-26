@@ -4,21 +4,27 @@
 
 NetFoundry registration script.
 
-This script is made up of several parts.  
+This script is made up of two parts.  
 
-1. A bootstrap script
-1. The OpenZiti Router enroll script - ziti_router_auto_enroll
+1. A bootstrap script - router_registration_bootstrap
 1. The main registration script - router_registration
+
+## Requirements
+
+### OpenZiti Router auto enroll
+
+The OpenZiti Regiration is a generic OpenZiti router registration script that can handle very custom configurations.  This script builds on top of that existing script.  In order to run this using python
+you also need the ziti_router_auto_enroll.py in be in the same directory.  If using the binary build you
+don't need the referenced file.
+
+See the [ziti_router_auto_enroll](https://github.com/netfoundry/ziti_router_auto_enroll) source for more information.
+
 
 ## Bootstrap
 
 The job of the bootstrap script is the download the latest version of the main script at run time, 
 if the main doesn't exist or is older than 12hrs.
 
-## OpenZiti Router auto enroll
-
-The OpenZiti Regiration is a generic OpenZiti router registration script that can handle very custom configurations.
-See the [ReadMe](https://github.com/netfoundry/edge-router-registration)
 ## Router Registration
 
 The registration script is to provide an easy way for a end user to register the NetFoundry Edge Router using a OTP(one time password).

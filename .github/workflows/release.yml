@@ -26,11 +26,9 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
     - name: Use pyinstall to create router_registration_bootstrap distribution binary
-      run: cp ziti_router_auto_enroll/ziti_router_auto_enroll.py .; pyinstaller -F router_registration_bootstrap.py
+      run: wget https://raw.githubusercontent.com/netfoundry/ziti_router_auto_enroll/main/ziti_router_auto_enroll.py; pyinstaller -F router_registration_bootstrap.py
     - name: Use pyinstall to create router_registration distribution binary
       run: pyinstaller -F router_registration.py      
-    - name: Use pyinstall to create ziti_router_auto_enroll distribution binary
-      run: pyinstaller -F ziti_router_auto_enroll/ziti_router_auto_enroll.py      
 
     - name: version
       run: echo "version=$(./dist/router_registration -v)" >> $GITHUB_ENV
@@ -43,9 +41,6 @@ jobs:
     - name: Tar router registration
       # tar with a . in the name for backwards compatibility
       run: cd dist; mv router_registration .router_registration; tar -zcvf router_registration.tar.gz .router_registration
-
-    - name: Tar ziti router auto enroll
-      run: cd dist; tar -zcvf ziti_router_auto_enroll.tar.gz ziti_router_auto_enroll
 
     - name: release
       uses: actions/create-release@v1
@@ -76,14 +71,4 @@ jobs:
         upload_url: ${{ steps.release.outputs.upload_url }}
         asset_path: dist/router_registration.tar.gz
         asset_name: router_registration.tar.gz
-        asset_content_type: application/gzip
-
-    - name: Upload ziti_router_auto_enroll
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ github.token }}
-      with:
-        upload_url: ${{ steps.release.outputs.upload_url }}
-        asset_path: dist/ziti_router_auto_enroll.tar.gz
-        asset_name: ziti_router_auto_enroll.tar.gz
         asset_content_type: application/gzip
