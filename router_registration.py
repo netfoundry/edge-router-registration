@@ -13,6 +13,7 @@ import ssl
 import tarfile
 import ipaddress
 import subprocess
+import platform
 import yaml
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
@@ -231,9 +232,10 @@ def create_parser():
                         default=True)
     parser.add_argument('--downloadUrl',
                         help='Specify bundle to download')
-    parser.add_argument('--diverter', type=str,
-                        choices=['small', 'medium', 'large'],
-                        help='Enable diverter of certain size')
+    parser.add_argument('--diverter',
+                        action='store_true',
+                        help='Enable diverter',
+                        default=False)
     parser.add_argument('-v', '--version',
                         action='version',
                         version=__version__)
@@ -248,26 +250,43 @@ def create_parser():
                        help='IP or DNS name for fabric component(if enabled)')
     return parser
 
-def diverter_add(install_size):
+def diverter_add():
     """
-    Download, install & initialize setup of the diverter(tproxy_slicer)
+    Download, install & initialize setup of the diverter(zfw)
 
-    :param install_size: The size of diverter slicer to download/install
     """
-    diverter_url = ("https://github.com/netfoundry/ebpf-tproxy-splicer/" +
-                "releases/latest/download/tproxy_splicer_" +
-                install_size)
+    logging.info("Fetching latest diverter")
+    try:
+        release_response = requests.get("https://api.github.com/repos"
+                                        "/netfoundry/zfw/releases/latest",
+                                        timeout=15)
+        release_data = release_response.json()
+    except requests.exceptions.ConnectionError as exception_result:
+        logging.warning('An issue occurred while trying to connect: %s', exception_result)
+
+    if platform.machine() in ['x86_64','AMD64']:
+        system_arch = 'amd64'
+
+    package_filename = f"zfw-tunnel_{release_data['tag_name']}_{system_arch}.deb"
+
+    download_url = None
+    for asset in release_data["assets"]:
+        if system_arch in asset["name"]:
+            download_url = asset["browser_download_url"]
+            break
+
+    if download_url is None:
+        logging.error("No matching package %s found", package_filename)
+        sys.exit(1)
 
     try:
-        logging.info("Downloading diverter")
-        file_name = "tproxy_slicer.tar.gz"
-        response = requests.get(diverter_url, stream=True, timeout=60)
+        response = requests.get(download_url, stream=True, timeout=60)
 
         total_size = int(response.headers.get("content-length", 0))
         block_size = 1024  # 1 Kibibyte
         status_bar = tqdm(total=total_size, unit="iB", unit_scale=True, desc="Downloading")
 
-        with open(file_name, "wb") as open_file:
+        with open(package_filename, "wb") as open_file:
             for data in response.iter_content(block_size):
                 status_bar.update(len(data))
                 open_file.write(data)
@@ -278,21 +297,16 @@ def diverter_add(install_size):
     except requests.exceptions.Timeout as timeout_exception:
         logging.warning('Timed out trying to download diverter %s', timeout_exception)
 
-    logging.info("Extracting diverter")
-    diverter_install_dir="/opt/netfoundry/ebpf"
+    logging.info("Installing diverter package")
     try:
-        if not os.path.isdir(diverter_install_dir):
-            os.mkdir(diverter_install_dir)
-        with tarfile.open(file_name) as download_file:
-            download_file.extractall(path=diverter_install_dir)
-        os.remove(file_name)
-    except OSError as exceptions:
-        logging.warning("Unable to install diverter: %s", exceptions)
+        subprocess.run([f"sudo dpkg -i {package_filename}"], shell=True, check=True)
+        os.remove(package_filename)
+    except subprocess.CalledProcessError as error:
+        logging.warning("Unable to run diverter install: %s", error)
 
     logging.info("Running diverter setup")
     try:
-        subprocess.run([f"{diverter_install_dir}/scripts/tproxy_splicer_startup.sh",
-                        '--initial-setup'],
+        subprocess.run(["/opt/openziti/bin/start_ebpf_router.py"],
                        check=True)
     except subprocess.CalledProcessError as error:
         logging.warning("Unable to run diverter setup: %s", error)
@@ -301,12 +315,10 @@ def diverter_remove():
     """
     Revert & cleanup an existing instance of diverter
     """
-    diverter_install_dir = "/opt/netfoundry/ebpf"
-    if os.path.isfile(f"{diverter_install_dir}/scripts/tproxy_splicer_startup.sh"):
+    if os.path.isfile("/opt/openziti/bin/revert_ebpf_router.py"):
         logging.info("Cleaning up diverter")
         try:
-            subprocess.run([f"{diverter_install_dir}/scripts/tproxy_splicer_startup.sh",
-                            '--revert-tproxy'],
+            subprocess.run(["/opt/openziti/bin/revert_ebpf_router.py"],
                         check=True)
         except subprocess.CalledProcessError as error:
             logging.warning("Unable to run diverter cleanup: %s", error)
@@ -332,25 +344,6 @@ def get_interface_by_ip(ip_address):
 
     logging.error("Unable to find interface name for ip.")
     sys.exit(1)
-
-def check_memory(size):
-    """
-    Get the total memory size of the local system in gigabytes.
-
-    :return (int): The total memory size in gigabytes, rounded to the nearest integer.
-    """
-    logging.debug("Checking Memory for diverter")
-    mem_info = psutil.virtual_memory()
-    mem_size_gb = mem_info.total / (1024 ** 3)  # Convert bytes to gigabytes
-    memory_size = round(mem_size_gb)
-    logging.debug("System Memory:  %sGB", memory_size)
-    size_requirements = {"small": 2, "medium": 4, "large": 6}
-    required_memory = size_requirements[size]
-
-    if memory_size < required_memory:
-        logging.error("The system doesn't meet the requirement for the size diverter chosen")
-        logging.error("%s - requires %sGB or more", size, required_memory)
-        sys.exit(1)
 
 def get_mop_router_information(endpoint_url, registration_key):
     """
@@ -786,9 +779,6 @@ def main():
     if not args.edge:
         check_ipv4_interface_count(parser)
 
-    if args.diverter:
-        check_memory(args.diverter)
-
     # set the ufw_save file used to track ufw rules created
     ufw_save_file='/opt/netfoundry/ziti/ziti-router/ufw_save_file.txt'
 
@@ -835,7 +825,7 @@ def main():
 
     # enable diverter
     if args.diverter:
-        diverter_add(args.diverter)
+        diverter_add()
 
 
     logging.info("\033[0;35mRegistration Successful\033[0m")
