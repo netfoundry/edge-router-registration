@@ -206,7 +206,7 @@ def create_parser():
 
     :return: A Namespace containing arguments
     """
-    __version__ = '1.0.3'
+    __version__ = '1.0.4'
     parser = argparse.ArgumentParser()
 
     parser.add_argument('registration_key',
