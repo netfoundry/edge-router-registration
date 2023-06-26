@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file. The format 
 ## [1.0.4] - 2023-06-23
 
 - Switch diverter configuration to zfw instead of tproxy slicer
+- Moved nfhelp download to before ziti registration
 
 ## [1.0.3] - 2023-06-20
 

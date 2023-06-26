@@ -806,14 +806,14 @@ def main():
     router_info = get_mop_router_information(mop_endpoint, args.registration_key)
     logging.debug(router_info)
 
+    # get the latest version of nfhelp
+    get_nfhelp()
+
     # check controller communications
     check_controller(router_info['networkControllerHost'])
 
     # handle ziti_router_auto_enroll
     handle_ziti_router_auto_enroll(args, router_info, enrollment_commands)
-
-    # get the latest version of nfhelp
-    get_nfhelp()
 
     # setup UFW
     if args.skip_fw:
