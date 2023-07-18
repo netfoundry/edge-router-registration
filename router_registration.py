@@ -166,6 +166,31 @@ def check_ipv4_interface_count(parser):
         parser.print_help()
         sys.exit(1)
 
+def check_subnet(subnet_str):
+    """
+    Check if the provided subnet string is a valid subnet.
+
+    Arguments:
+    subnet_str -- A string representing the subnet in the format 'ip_address/prefix_length'.
+
+    Returns:
+    True if the subnet is valid and conforms to the criteria, False otherwise.
+    """
+    logging.debug("Checking subnet")
+    if not "/" in subnet_str:
+        logging.error("Subnet is not in slash notation")
+        sys.exit(1)
+    if "/32" in subnet_str:
+        logging.error("Unable to support /32 subnets")
+        sys.exit(1)
+    try:
+        subnet = ipaddress.ip_network(subnet_str)
+        logging.debug(subnet)
+        return subnet.prefixlen < subnet.max_prefixlen and subnet.prefixlen > 0
+    except (ValueError, AttributeError):
+        logging.error("Unable to parser subnet")
+        sys.exit(1)
+
 def create_netfoundry_tuning_file():
     """
     Creates a file named '01-netfoundry_tuning.conf' containing specific tuning content
@@ -206,7 +231,7 @@ def create_parser():
 
     :return: A Namespace containing arguments
     """
-    __version__ = '1.0.4'
+    __version__ = '1.0.5'
     parser = argparse.ArgumentParser()
 
     parser.add_argument('registration_key',
@@ -248,6 +273,12 @@ def create_parser():
                        help="IP Address for tunnel component(if enabled)")
     group.add_argument('-b', '--fabric',
                        help='IP or DNS name for fabric component(if enabled)')
+    group.add_argument('--dnsIPRange',
+                       help='Override the default resolver ip range assiged. '
+                       'Must in in subnet notation 100.64.0.0/10')
+    group.add_argument('--lanIf',
+                       help='Override the interface name assigned to lanIf.')
+
     return parser
 
 def diverter_add():
@@ -503,12 +534,26 @@ def handle_ziti_router_auto_enroll(args, router_info, enrollment_commands):
     # if overriding the tunnel ip, check if valid and configure a
     # manual tunnelListener.  Otherwise just let the auto_enroller
     # create one.
-    if args.tunnel_ip:
-        interface_name = get_interface_by_ip(args.tunnel_ip)
+    if args.tunnel_ip or args.lanIf or args.dnsIPRange:
+        if args.lanIf:
+            interface_name = args.lanIf
+        if args.tunnel_ip:
+            tunnel_ip = args.tunnel_ip
+            if not args.lanIf:
+                interface_name = get_interface_by_ip(tunnel_ip)
+        else:
+            tunnel_ip = ziti_router_auto_enroll.get_private_address()
+            if not args.lanIf:
+                interface_name = get_interface_by_ip(tunnel_ip)
+        if args.dnsIPRange:
+            dns_ip_range = args.dnsIPRange
+        else:
+            dns_ip_range = '100.64.0.0/10'
         enrollment_commands.append("--tunnelListener")
         enrollment_commands.append("tproxy")
-        enrollment_commands.append(f"udp://{args.tunnel_ip}:53")
+        enrollment_commands.append(f"udp://{tunnel_ip}:53")
         enrollment_commands.append(f"{interface_name}")
+        enrollment_commands.append(dns_ip_range)
     else:
         enrollment_commands.append('--autoTunnelListener')
 
@@ -778,6 +823,10 @@ def main():
     # check the number of interfaces
     if not args.edge:
         check_ipv4_interface_count(parser)
+
+    # check subnet if passed
+    if args.dnsIPRange:
+        check_subnet(args.dnsIPRange)
 
     # set the ufw_save file used to track ufw rules created
     ufw_save_file='/opt/netfoundry/ziti/ziti-router/ufw_save_file.txt'
