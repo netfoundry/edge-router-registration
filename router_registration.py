@@ -540,15 +540,13 @@ def handle_ziti_router_auto_enroll(args, router_info, enrollment_commands):
         if args.tunnel_ip:
             tunnel_ip = args.tunnel_ip
             if not args.lanIf:
-                interface_name = get_interface_by_ip(args.tunnel_ip)
+                interface_name = get_interface_by_ip(tunnel_ip)
         else:
             tunnel_ip = ziti_router_auto_enroll.get_private_address()
+            if not args.lanIf:
+                interface_name = get_interface_by_ip(tunnel_ip)
         if args.dnsIPRange:
             dns_ip_range = args.dnsIPRange
-            if not args.tunnel_ip:
-                tunnel_ip = ziti_router_auto_enroll.get_private_address()
-            if not args.lanIf:
-                interface_name = get_interface_by_ip(args.tunnel_ip)
         else:
             dns_ip_range = '100.64.0.0/10'
         enrollment_commands.append("--tunnelListener")
