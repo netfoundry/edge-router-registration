@@ -36,7 +36,7 @@ def check_controller(controller_host):
     check_controller_certificate(controller_host)
 
     # check controller for ports
-    port_list = [80, 443, 6262]
+    port_list = [80, 443]
     for port in port_list:
         if not check_host_port(controller_host, port):
             logging.error("Unable to communicate with "
@@ -231,7 +231,7 @@ def create_parser():
 
     :return: A Namespace containing arguments
     """
-    __version__ = '1.0.6'
+    __version__ = '1.0.7'
     parser = argparse.ArgumentParser()
 
     parser.add_argument('registration_key',
