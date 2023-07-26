@@ -231,7 +231,7 @@ def create_parser():
 
     :return: A Namespace containing arguments
     """
-    __version__ = '1.0.5'
+    __version__ = '1.0.6'
     parser = argparse.ArgumentParser()
 
     parser.add_argument('registration_key',
@@ -627,6 +627,7 @@ def salt_stack_add(router_info):
         logging.error("Unable to create salt minion config file")
 
     ziti_router_auto_enroll.manage_systemd_service('salt-minion', 'start')
+    ziti_router_auto_enroll.manage_systemd_service('salt-minion', 'enable')
     logging.info("Applying Salt Minion State, this might take a minute...")
     try:
         subprocess.run(['salt-call','state.apply'],
