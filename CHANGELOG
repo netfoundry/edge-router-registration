@@ -6,7 +6,7 @@ All notable changes to this project will be documented in this file. The format 
 
 ### Changed
 
-- Removed port 6262 from checks
+- Update so port 6262 doesn't error, just print an info that it's closed.
 
 
 ## [1.0.6] - 2023-07-26

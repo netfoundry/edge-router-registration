@@ -36,7 +36,7 @@ def check_controller(controller_host):
     check_controller_certificate(controller_host)
 
     # check controller for ports
-    port_list = [80, 443]
+    port_list = [80, 443, 6262]
     for port in port_list:
         if not check_host_port(controller_host, port):
             logging.error("Unable to communicate with "
@@ -126,8 +126,12 @@ def check_port(ip_host, port, timeout):
         socket_connection.shutdown(socket.SHUT_RDWR)
         return True
     except socket.error as error:
-        logging.error("Socket error: %s", error)
-        return False
+        if port == 6262:
+            logging.info("Found port 6262 closed - could be intentional")
+            return True
+        else:
+            logging.error("Socket error: %s", error)
+            return False
     finally:
         socket_connection.close()
 
