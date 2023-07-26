@@ -126,8 +126,12 @@ def check_port(ip_host, port, timeout):
         socket_connection.shutdown(socket.SHUT_RDWR)
         return True
     except socket.error as error:
-        logging.error("Socket error: %s", error)
-        return False
+        if port == 6262:
+            logging.info("Found port 6262 closed - could be intentional")
+            return True
+        else:
+            logging.error("Socket error: %s", error)
+            return False
     finally:
         socket_connection.close()
 
@@ -231,7 +235,7 @@ def create_parser():
 
     :return: A Namespace containing arguments
     """
-    __version__ = '1.0.6'
+    __version__ = '1.0.7'
     parser = argparse.ArgumentParser()
 
     parser.add_argument('registration_key',
