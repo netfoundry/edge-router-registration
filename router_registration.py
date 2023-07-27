@@ -115,9 +115,14 @@ def check_port(ip_host, port, timeout):
 
     :return True if the host is reachable on the specified port, False otherwise.
     """
-    bypass = int(os.environ.get('NF_PORT_BYPASS'))
+    bypass = os.environ.get('NF_PORT_BYPASS')
+    logging.debug("Bypass value: %s", bypass)
+    if bypass:
+        bypass = int(os.environ.get('NF_PORT_BYPASS'))
+    else:
+        bypass = 0
     if bypass == port:
-        logging.debug("Bypassing port check for port: %s", bypass)
+        logging.info("Bypassing port check for port: %s", bypass)
         return True
     socket_connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     socket_connection.settimeout(timeout)
