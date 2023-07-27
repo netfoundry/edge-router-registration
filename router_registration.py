@@ -115,7 +115,7 @@ def check_port(ip_host, port, timeout):
 
     :return True if the host is reachable on the specified port, False otherwise.
     """
-    bypass = os.environ.get('NF_PORT_BYPASS')
+    bypass = int(os.environ.get('NF_PORT_BYPASS'))
     if bypass == port:
         logging.debug("Bypassing port check for port: %s", bypass)
         return True
@@ -235,7 +235,7 @@ def create_parser():
 
     :return: A Namespace containing arguments
     """
-    __version__ = '1.0.7'
+    __version__ = '1.0.8'
     parser = argparse.ArgumentParser()
 
     parser.add_argument('registration_key',
