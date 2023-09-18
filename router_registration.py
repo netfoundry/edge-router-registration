@@ -638,7 +638,7 @@ def salt_stack_add(router_info):
     minion_config = '/etc/salt/minion.d/nf-minion.conf'
     yaml_content = ({'id': router_info['edgeRouter']['hostId'],
                      'master': '127.0.0.1',
-                     'grains': {'roles': 'ER'}})
+                     'grains': {'roles': ['ER']}})
     try:
         with open(minion_config, "w", encoding='UTF-8') as open_file:
             yaml.dump(yaml_content, open_file, sort_keys=False)
