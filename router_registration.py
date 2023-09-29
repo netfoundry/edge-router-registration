@@ -241,7 +241,7 @@ def create_parser():
 
     :return: A Namespace containing arguments
     """
-    __version__ = '1.0.10'
+    __version__ = '1.0.12'
     parser = argparse.ArgumentParser()
 
     mgroup = parser.add_mutually_exclusive_group(required=True)
@@ -617,6 +617,16 @@ def handle_ziti_router_auto_enroll(args, router_info, enrollment_commands):
     else:
         enrollment_commands.append(router_info['productMetadata']['zitiBinaryBundleLinuxAMD64'])
 
+    # check if ziti version is 0.30.0 or above
+    fabric_port = ziti_router_auto_enroll.compare_semver(
+        router_info['productMetadata']['zitiVersion'],'0.30.0'
+    )
+
+    # pass in fabric port 443 for versions 0.30.0 and above
+    if fabric_port >= 0:
+        logging.debug("Setting fabric port to 443")
+        enrollment_commands.append('--controllerFabricPort')
+        enrollment_commands.append('443')
     # print enrollment command in debug
     logging.debug(enrollment_commands)
 
@@ -661,7 +671,7 @@ def salt_stack_add(router_info):
     minion_config = '/etc/salt/minion.d/nf-minion.conf'
     yaml_content = ({'id': router_info['edgeRouter']['hostId'],
                      'master': '127.0.0.1',
-                     'grains': {'roles': 'ER'}})
+                     'grains': {'roles': ['ER']}})
     try:
         with open(minion_config, "w", encoding='UTF-8') as open_file:
             yaml.dump(yaml_content, open_file, sort_keys=False)
