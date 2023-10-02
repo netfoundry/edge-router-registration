@@ -14,6 +14,7 @@ import tarfile
 import ipaddress
 import subprocess
 import platform
+from urllib.parse import urlparse
 import yaml
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
@@ -240,11 +241,15 @@ def create_parser():
 
     :return: A Namespace containing arguments
     """
-    __version__ = '1.0.11'
+    __version__ = '1.0.12'
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('registration_key',
+    mgroup = parser.add_mutually_exclusive_group(required=True)
+
+    mgroup.add_argument('registration_key', nargs='?',
                         help='NetFoundry Edge-Router Registration Key')
+    mgroup.add_argument('--jwt', type=str,
+                        help='Path to file based jwt')
     parser.add_argument('-f', '--force',
                         action="store_false",
                         help='Forcefully proceed with re-enrollment',
@@ -264,7 +269,14 @@ def create_parser():
                         action='store_false',
                         help='Skip applying fw rules',
                         default=True)
-    parser.add_argument('--downloadUrl',
+    parser.add_argument('--controller',type=str,
+                        help='Hostname or IP of Openziti controller')
+    parser.add_argument('--hostId', type=str,
+                        help='Salstack minion host id')
+    parser.add_argument('--linkListener',
+                        action='store_false',
+                        help='Enabled local LinkListener')
+    parser.add_argument('--downloadUrl', type=str,
                         help='Specify bundle to download')
     parser.add_argument('--diverter',
                         action='store_true',
@@ -627,6 +639,27 @@ def handle_ziti_router_auto_enroll(args, router_info, enrollment_commands):
     os.rename(target, source)
     os.symlink(source, target)
 
+def process_manual_registration_arguments(args):
+    """
+    a
+    """
+    if not args.downloadUrl:
+        logging.error("--downloadUrl is required when using --jwt")
+        sys.exit(1)
+    if not args.hostId:
+        logging.error("--hostId is required when using --jwt")
+        sys.exit(1)
+    jwt_info, jwt_string = ziti_router_auto_enroll.decode_jwt(args.jwt)
+    router_info={}
+    router_info['networkControllerHost'] = urlparse(jwt_info['iss']).hostname
+    router_info['edgeRouter']={}
+    router_info['edgeRouter']['jwt'] = jwt_string
+    router_info['edgeRouter']['hostId'] = args.hostId
+    if args.linkListener:
+        router_info['edgeRouter']['linkListener'] = True
+
+    return router_info
+
 def salt_stack_add(router_info):
     """
     Creates a salt-stack minion configuration & starts the salt-minion process.
@@ -822,6 +855,9 @@ def main():
     # get arguments passed
     args = parser.parse_args()
 
+    # root check
+    check_root_permissions()
+
     # start the ziti_router_auto_enroll command list
     enrollment_commands=[]
 
@@ -836,8 +872,7 @@ def main():
     # setup logging
     setup_logging(log_file, args.logLevel)
 
-    # root check
-    check_root_permissions()
+
     logging.info("\033[0;35mStarting Registration\033[0m")
 
     # check the number of interfaces
@@ -869,11 +904,14 @@ def main():
     create_netfoundry_tuning_file()
 
     # set mop endpoint using the registration key
-    mop_endpoint = check_registration_key(args.registration_key)
+    if args.registration_key:
+        mop_endpoint = check_registration_key(args.registration_key)
 
-    # get jwt from MOP
-    router_info = get_mop_router_information(mop_endpoint, args.registration_key)
-    logging.debug(router_info)
+        # get jwt from MOP
+        router_info = get_mop_router_information(mop_endpoint, args.registration_key)
+        logging.debug(router_info)
+    else:
+        router_info = process_manual_registration_arguments(args)
 
     # get the latest version of nfhelp
     get_nfhelp()
