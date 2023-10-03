@@ -43,32 +43,13 @@ jobs:
       run: cd dist; mv router_registration .router_registration; tar -zcvf router_registration.tar.gz .router_registration
 
     - name: release
-      uses: actions/create-release@v1
+      uses: ncipollo/release-action@v1
       id: release
       with:
         draft: false
         prerelease: false
-        release_name: v${{ env.version }}
-        tag_name: v${{ env.version }}
+        tag: v${{ env.version }}
+        artifacts: "dist/router_registration_bootstrap.tar.gz,dist/router_registration.tar.gz"
+        artifactContentType: application/gzip
       env:
         GITHUB_TOKEN: ${{ github.token }}
-
-    - name: Upload registration bootstrap release
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ github.token }}
-      with:
-        upload_url: ${{ steps.release.outputs.upload_url }}
-        asset_path: dist/router_registration_bootstrap.tar.gz
-        asset_name: router_registration_bootstrap.tar.gz
-        asset_content_type: application/gzip
-
-    - name: Upload router_registration
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ github.token }}
-      with:
-        upload_url: ${{ steps.release.outputs.upload_url }}
-        asset_path: dist/router_registration.tar.gz
-        asset_name: router_registration.tar.gz
-        asset_content_type: application/gzip
