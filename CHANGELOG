@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file. The format 
 ### Changed
 
  - Removed port 80 from port check list
+ - Removed nfhelp download
 
 ## [1.0.12]
 

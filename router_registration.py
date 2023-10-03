@@ -10,7 +10,6 @@ import logging
 import json
 import time
 import ssl
-import tarfile
 import ipaddress
 import subprocess
 import platform
@@ -432,43 +431,6 @@ def get_mop_router_information(endpoint_url, registration_key):
     else:
         logging.error("Failed to reach NetFoundry: %s", http_code)
         sys.exit(1)
-
-def get_nfhelp():
-    """
-    Download latest version of nfhelp menu
-    """
-    nfhelp_url = ("https://github.com/netfoundry/edge-router-nfhelp"
-                  "/releases/latest/download/nfhelp.tar.gz")
-
-    try:
-        logging.info("Downloading latest nfhelp")
-        file_name = "nfhelp.tar.gz"
-        response = requests.get(nfhelp_url, stream=True, timeout=60)
-
-        total_size = int(response.headers.get("content-length", 0))
-        block_size = 1024  # 1 Kibibyte
-        status_bar = tqdm(total=total_size, unit="iB", unit_scale=True, desc="Downloading")
-
-        with open(file_name, "wb") as open_file:
-            for data in response.iter_content(block_size):
-                status_bar.update(len(data))
-                open_file.write(data)
-
-        status_bar.close()
-    except requests.exceptions.ConnectionError as exception_result:
-        logging.warning('An issue occurred while trying to connect: %s', exception_result)
-    except requests.exceptions.Timeout as timeout_exception:
-        logging.warning('Timed out trying to download nfhelp %s', timeout_exception)
-
-    try:
-        with tarfile.open(file_name) as download_file:
-            download_file.extractall(path="/opt/netfoundry/")
-        os.remove("/etc/profile.d/nfhelp.sh")
-        os.replace("/opt/netfoundry/nfhelp.sh", "/etc/profile.d/nfhelp.sh")
-        os.chmod("/etc/profile.d/nfhelp.sh", 0o755)
-        os.remove(file_name)
-    except OSError as exceptions:
-        logging.warning("Unable to install new nfhelp: %s", exceptions)
 
 def get_subnet_by_ip(input_ip):
     """
@@ -913,9 +875,6 @@ def main():
     else:
         router_info = process_manual_registration_arguments(args)
 
-    # get the latest version of nfhelp
-    get_nfhelp()
-
     # check controller communications
     check_controller(router_info['networkControllerHost'])
 
@@ -936,8 +895,8 @@ def main():
 
 
     logging.info("\033[0;35mRegistration Successful\033[0m")
-    logging.info("\033[0;35mPlease use\033[0m \033[0;31mnfhelp-reload\033[0;35m "
-                 "to use nfhelp commands\033[0m")
+    logging.info("\033[0;35mPlease use\033[0m \033[0;31mnfhelp-update\033[0;35m "
+                 "before you use nfhelp commands\033[0m")
 
 # main
 if __name__ == '__main__':
