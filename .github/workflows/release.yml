@@ -26,9 +26,9 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
     - name: Use pyinstall to create router_registration_bootstrap distribution binary
-      run: wget https://raw.githubusercontent.com/netfoundry/ziti_router_auto_enroll/main/ziti_router_auto_enroll.py; pyinstaller -F router_registration_bootstrap.py
+      run: wget https://raw.githubusercontent.com/netfoundry/ziti_router_auto_enroll/main/ziti_router_auto_enroll.py; pyinstaller -F router_registration_bootstrap.py --runtime-tmpdir /opt/netfoundry/
     - name: Use pyinstall to create router_registration distribution binary
-      run: pyinstaller -F router_registration.py      
+      run: pyinstaller -F router_registration.py --runtime-tmpdir /opt/netfoundry/   
 
     - name: version
       run: echo "version=$(./dist/router_registration -v)" >> $GITHUB_ENV
