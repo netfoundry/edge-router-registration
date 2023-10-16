@@ -240,7 +240,7 @@ def create_parser():
 
     :return: A Namespace containing arguments
     """
-    __version__ = '1.1.0'
+    __version__ = '1.1.1'
     parser = argparse.ArgumentParser()
 
     mgroup = parser.add_mutually_exclusive_group(required=True)
@@ -281,6 +281,12 @@ def create_parser():
                         action='store_true',
                         help='Enable diverter',
                         default=False)
+    parser.add_argument('--proxyType',type=str,
+                        help='Proxy type')
+    parser.add_argument('--proxyAddress',type=str,
+                        help='Proxy Address')
+    parser.add_argument('--proxyPort',type=int,
+                        help='Proxy Port')
     parser.add_argument('-v', '--version',
                         action='version',
                         version=__version__)
@@ -589,6 +595,18 @@ def handle_ziti_router_auto_enroll(args, router_info, enrollment_commands):
         logging.debug("Setting fabric port to 443")
         enrollment_commands.append('--controllerFabricPort')
         enrollment_commands.append('443')
+
+    # add proxy if specified
+    if args.proxyAddress:
+        enrollment_commands.append('--proxyAddress')
+        enrollment_commands.append(args.proxyAddress)
+        if args.proxyType:
+            enrollment_commands.append('--proxyType')
+            enrollment_commands.append(args.proxyType)
+        if args.proxyPort:
+            enrollment_commands.append('--proxyPort')
+            enrollment_commands.append(str(args.proxyPort))
+
     # print enrollment command in debug
     logging.debug(enrollment_commands)
 
@@ -876,7 +894,8 @@ def main():
         router_info = process_manual_registration_arguments(args)
 
     # check controller communications
-    check_controller(router_info['networkControllerHost'])
+    if not args.proxyAddress:
+        check_controller(router_info['networkControllerHost'])
 
     # handle ziti_router_auto_enroll
     handle_ziti_router_auto_enroll(args, router_info, enrollment_commands)
