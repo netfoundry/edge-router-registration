@@ -240,7 +240,7 @@ def create_parser():
 
     :return: A Namespace containing arguments
     """
-    __version__ = '1.1.1'
+    __version__ = '1.1.2'
     parser = argparse.ArgumentParser()
 
     mgroup = parser.add_mutually_exclusive_group(required=True)
@@ -637,6 +637,10 @@ def process_manual_registration_arguments(args):
     router_info['edgeRouter']['hostId'] = args.hostId
     if args.linkListener:
         router_info['edgeRouter']['linkListener'] = True
+
+    router_info['productMetadata']={}
+    ziti_version = ziti_router_auto_enroll.get_ziti_controller_version(jwt_info['iss'])
+    router_info['productMetadata']['zitiVersion'] = ziti_version
 
     return router_info
 
