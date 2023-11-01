@@ -240,7 +240,7 @@ def create_parser():
 
     :return: A Namespace containing arguments
     """
-    __version__ = '1.1.2'
+    __version__ = '1.2.0'
     parser = argparse.ArgumentParser()
 
     mgroup = parser.add_mutually_exclusive_group(required=True)
@@ -287,6 +287,10 @@ def create_parser():
                         help='Proxy Address')
     parser.add_argument('--proxyPort',type=int,
                         help='Proxy Port')
+    parser.add_argument('--customRepoAddress',type=str,
+                        help="Override the default github repository address"
+                             " - replacement must match github structure")
+
     parser.add_argument('-v', '--version',
                         action='version',
                         version=__version__)
@@ -582,8 +586,13 @@ def handle_ziti_router_auto_enroll(args, router_info, enrollment_commands):
     enrollment_commands.append('--downloadUrl')
     if args.downloadUrl:
         enrollment_commands.append(args.downloadUrl)
+
+    elif args.customRepoAddress:
+        logging.info("Downloading from custom repo")
+        enrollment_commands.append(f"https://{args.customRepoAddress}/openziti/ziti/releases/download/v{router_info['productMetadata']['zitiVersion']}/ziti-linux-amd64-{router_info['productMetadata']['zitiVersion']}.tar.gz")
     else:
         enrollment_commands.append(router_info['productMetadata']['zitiBinaryBundleLinuxAMD64'])
+
 
     # check if ziti version is 0.30.0 or above
     fabric_port = ziti_router_auto_enroll.compare_semver(
