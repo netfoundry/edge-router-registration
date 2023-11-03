@@ -240,7 +240,7 @@ def create_parser():
 
     :return: A Namespace containing arguments
     """
-    __version__ = '1.2.0'
+    __version__ = '1.2.1'
     parser = argparse.ArgumentParser()
 
     mgroup = parser.add_mutually_exclusive_group(required=True)
@@ -589,7 +589,9 @@ def handle_ziti_router_auto_enroll(args, router_info, enrollment_commands):
 
     elif args.customRepoAddress:
         logging.info("Downloading from custom repo")
-        enrollment_commands.append(f"https://{args.customRepoAddress}/openziti/ziti/releases/download/v{router_info['productMetadata']['zitiVersion']}/ziti-linux-amd64-{router_info['productMetadata']['zitiVersion']}.tar.gz")
+        enrollment_commands.append(f"https://{args.customRepoAddress}/openziti/ziti/"
+                "releases/download/v{router_info['productMetadata']['zitiVersion']}/"
+                "ziti-linux-amd64-{router_info['productMetadata']['zitiVersion']}.tar.gz")
     else:
         enrollment_commands.append(router_info['productMetadata']['zitiBinaryBundleLinuxAMD64'])
 
