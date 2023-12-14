@@ -240,7 +240,7 @@ def create_parser():
 
     :return: A Namespace containing arguments
     """
-    __version__ = '1.2.3'
+    __version__ = '1.2.4'
     parser = argparse.ArgumentParser()
 
     mgroup = parser.add_mutually_exclusive_group(required=True)
@@ -268,8 +268,6 @@ def create_parser():
                         action='store_false',
                         help='Skip applying fw rules',
                         default=True)
-    parser.add_argument('--controller',type=str,
-                        help='Hostname or IP of Openziti controller')
     parser.add_argument('--hostId', type=str,
                         help='Salstack minion host id')
     parser.add_argument('--linkListener',
