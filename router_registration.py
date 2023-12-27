@@ -9,11 +9,13 @@ import socket
 import logging
 import json
 import time
+from datetime import datetime, timedelta
 import ssl
 import ipaddress
 import subprocess
 import platform
 from urllib.parse import urlparse
+import ntplib
 import yaml
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
@@ -200,6 +202,40 @@ def check_subnet(subnet_str):
         logging.error("Unable to parser subnet")
         sys.exit(1)
 
+def check_time_diff(margin_minutes=10, server="pool.ntp.org"):
+    """
+    Check if the local time is within a specified margin from the NTP server.
+
+    :param margin_minutes: The acceptable margin in minutes. Default is 5 minutes.
+    :param server: The NTP server address. Default is "pool.ntp.org".
+    return: True if local time is within the acceptable margin from the NTP server
+    """
+    # Get the current NTP time
+    try:
+        client = ntplib.NTPClient()
+        response = client.request(server)
+        ntp_time = datetime.utcfromtimestamp(response.tx_time)
+    except SystemError:
+        logging.warning("Unable to compare time.")
+
+    if ntp_time is not None:
+        logging.debug("ntp time: %s", ntp_time)
+        # Get the local time
+        local_time = datetime.now()
+        logging.debug("local time: %s", local_time)
+
+        # Calculate the difference between local time and NTP time
+        time_difference = local_time - ntp_time
+        logging.debug("Time difference: %s", time_difference)
+
+        # Check if the absolute difference is within the specified margin
+        if abs(time_difference) >= timedelta(minutes=margin_minutes):
+            logging.error("Time difference: %s", time_difference)
+            logging.error("Unable to proceed, please check local time")
+            sys.exit(1)
+    else:
+        logging.warning("Unable to compare time.")
+
 def create_netfoundry_tuning_file():
     """
     Creates a file named '01-netfoundry_tuning.conf' containing specific tuning content
@@ -240,7 +276,7 @@ def create_parser():
 
     :return: A Namespace containing arguments
     """
-    __version__ = '1.2.4'
+    __version__ = '1.3.0'
     parser = argparse.ArgumentParser()
 
     mgroup = parser.add_mutually_exclusive_group(required=True)
@@ -259,7 +295,8 @@ def create_parser():
                         help='Set the logging level - Default: INFO)')
     parser.add_argument('--logFile', type=str,
                         help='Specify the log file -'
-                             'Default router_registration.log')
+                             'Default router_registration.log',
+                        default='/var/log/router_registration.log')
     parser.add_argument('-s', '--salt',
                         action="store_false",
                         help='Skip salt-stack setup',
@@ -867,6 +904,9 @@ def main():
 
 
     logging.info("\033[0;35mStarting Registration\033[0m")
+
+    # check time
+    check_time_diff()
 
     # check the number of interfaces
     if not args.edge:
