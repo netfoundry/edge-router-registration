@@ -276,7 +276,7 @@ def create_parser():
 
     :return: A Namespace containing arguments
     """
-    __version__ = '1.3.0'
+    __version__ = '1.3.1'
     parser = argparse.ArgumentParser()
 
     mgroup = parser.add_mutually_exclusive_group(required=True)
@@ -305,6 +305,10 @@ def create_parser():
                         action='store_false',
                         help='Skip applying fw rules',
                         default=True)
+    parser.add_argument('--hostOnly',
+                        action='store_true',
+                        help='Enable ER Tunnel in host mode & do not setup local dns',
+                        default=False)
     parser.add_argument('--hostId', type=str,
                         help='Salstack minion host id')
     parser.add_argument('--linkListener',
@@ -562,7 +566,12 @@ def handle_ziti_router_auto_enroll(args, router_info, enrollment_commands):
     # if overriding the tunnel ip, check if valid and configure a
     # manual tunnelListener.  Otherwise just let the auto_enroller
     # create one.
-    if args.tunnel_ip or args.lanIf or args.dnsIPRange:
+
+    if args.hostOnly:
+        enrollment_commands.append("--skipDNS")
+        enrollment_commands.append("--tunnelListener")
+        enrollment_commands.append("host")
+    elif args.tunnel_ip or args.lanIf or args.dnsIPRange:
         if args.lanIf:
             interface_name = args.lanIf
         if args.tunnel_ip:
