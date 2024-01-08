@@ -215,7 +215,7 @@ def check_time_diff(margin_minutes=10, server="pool.ntp.org"):
         client = ntplib.NTPClient()
         response = client.request(server)
         ntp_time = datetime.utcfromtimestamp(response.tx_time)
-    except SystemError:
+    except ntplib.NTPException:
         logging.warning("Unable to compare time.")
 
     if ntp_time is not None:
@@ -276,7 +276,7 @@ def create_parser():
 
     :return: A Namespace containing arguments
     """
-    __version__ = '1.3.1'
+    __version__ = '1.3.2'
     parser = argparse.ArgumentParser()
 
     mgroup = parser.add_mutually_exclusive_group(required=True)
@@ -316,6 +316,9 @@ def create_parser():
                         help='Enabled local LinkListener')
     parser.add_argument('--downloadUrl', type=str,
                         help='Specify bundle to download')
+    parser.add_argument('--ntp', type=str,
+                        help='Specify ntp server to check',
+                        default="pool.ntp.org")
     parser.add_argument('--diverter',
                         action='store_true',
                         help='Enable diverter',
@@ -915,7 +918,7 @@ def main():
     logging.info("\033[0;35mStarting Registration\033[0m")
 
     # check time
-    check_time_diff()
+    check_time_diff(server=args.ntp)
 
     # check the number of interfaces
     if not args.edge:
