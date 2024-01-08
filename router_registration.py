@@ -210,6 +210,7 @@ def check_time_diff(margin_minutes=10, server="pool.ntp.org"):
     :param server: The NTP server address. Default is "pool.ntp.org".
     return: True if local time is within the acceptable margin from the NTP server
     """
+    ntp_time = None
     # Get the current NTP time
     try:
         client = ntplib.NTPClient()
@@ -218,7 +219,7 @@ def check_time_diff(margin_minutes=10, server="pool.ntp.org"):
     except ntplib.NTPException:
         logging.warning("Unable to compare time.")
 
-    if ntp_time is not None:
+    if ntp_time:
         logging.debug("ntp time: %s", ntp_time)
         # Get the local time
         local_time = datetime.now()
@@ -233,8 +234,6 @@ def check_time_diff(margin_minutes=10, server="pool.ntp.org"):
             logging.error("Time difference: %s", time_difference)
             logging.error("Unable to proceed, please check local time")
             sys.exit(1)
-    else:
-        logging.warning("Unable to compare time.")
 
 def create_netfoundry_tuning_file():
     """
