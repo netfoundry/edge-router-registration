@@ -285,7 +285,7 @@ def create_parser():
 
     :return: A Namespace containing arguments
     """
-    __version__ = '1.3.2'
+    __version__ = '1.4.0'
     parser = argparse.ArgumentParser()
 
     mgroup = parser.add_mutually_exclusive_group(required=True)
