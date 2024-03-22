@@ -78,7 +78,7 @@ def check_registration_key(registration_key):
     if len(registration_key) == 10:
         return 'https://gateway.production.netfoundry.io/core/v2/edge-routers'
     if len(registration_key) == 11:
-        return 'https://gateway.production.netfoundry.io/core/v3/edge-routers'
+        return 'https://gateway.production.netfoundry.io/core/v3/edge-router-registrations'
     if registration_key.startswith("SA"):
         key_environment = 'sandboox'
     if registration_key.startswith("ST"):
@@ -91,8 +91,8 @@ def check_registration_key(registration_key):
         return 'https://gateway.' + str(key_environment) + '.netfoundry.io/core/v2/edge-routers'
     if len(registration_key) == 13:
         if key_environment == 'development':
-            return 'http://localhost:9300/core/v3/edge-routers'
-        return 'https://gateway.' + str(key_environment) + '.netfoundry.io/core/v3/edge-routers'
+            return 'http://localhost:9300/core/v3/edge-router-registrations'
+        return 'https://gateway.' + str(key_environment) + '.netfoundry.io/core/v3/edge-router-registrations'
 
     logging.error("Unable to determine environment using provided registration key")
     sys.exit(1)
