@@ -80,7 +80,7 @@ def check_registration_key(registration_key):
     if len(registration_key) == 11:
         return 'https://gateway.production.netfoundry.io/core/v3/edge-router-registrations'
     if registration_key.startswith("SA"):
-        key_environment = 'sandboox'
+        key_environment = 'sandbox'
     if registration_key.startswith("ST"):
         key_environment = 'staging'
     if registration_key.startswith("DE"):
