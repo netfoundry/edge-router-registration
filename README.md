@@ -94,7 +94,7 @@ This scrip allows some options for the NetFoundry Edge-Router registration proce
 
 - An optional registration key
 - An optional `--jwt` Path to file based jwt as an alternative to registration key
-- 
+
 - An optional `-f/--force` flag to forcefully proceed with re-enrollment
 - An optional `-l/--logLevel` argument to set the logging level (default: INFO)
 - An optional `--logFile` argument to specify the log file (default: router_registration.log)
