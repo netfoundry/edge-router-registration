@@ -76,7 +76,7 @@ def check_registration_key(registration_key):
     :return NetFoundry MOP endpoint
     """
     if len(registration_key) == 10:
-        return 'https://gateway.production.netfoundry.io/core/v2/edge-routers'
+        return 'https://gateway.production.netfoundry.io/core/v2/edge-routers/register'
     if len(registration_key) == 11:
         return 'https://gateway.production.netfoundry.io/core/v3/edge-router-registrations'
     if registration_key.startswith("SA"):
@@ -87,8 +87,8 @@ def check_registration_key(registration_key):
         key_environment = 'development'
     if len(registration_key) == 12:
         if key_environment == 'development':
-            return 'http://localhost:9300/core/v2/edge-routers'
-        return 'https://gateway.' + str(key_environment) + '.netfoundry.io/core/v2/edge-routers'
+            return 'http://localhost:9300/core/v2/edge-routers/register'
+        return 'https://gateway.' + str(key_environment) + '.netfoundry.io/core/v2/edge-routers/register'
     if len(registration_key) == 13:
         if key_environment == 'development':
             return 'http://localhost:9300/core/v3/edge-router-registrations'
@@ -285,7 +285,7 @@ def create_parser():
 
     :return: A Namespace containing arguments
     """
-    __version__ = '1.4.0'
+    __version__ = '1.4.1'
     parser = argparse.ArgumentParser()
 
     mgroup = parser.add_mutually_exclusive_group(required=True)
@@ -468,7 +468,7 @@ def get_mop_router_information(endpoint_url, registration_key):
     """
     try:
         headers = {'content-type': 'application/json'}
-        endpoint_url = f"{endpoint_url}/register/{registration_key}"
+        endpoint_url = f"{endpoint_url}/{registration_key}"
         logging.debug("Connecting to: %s", endpoint_url)
         response = requests.post(endpoint_url,
                                  headers=headers,
