@@ -90,7 +90,7 @@ Ability to enable the [ebpf tproxy slicer](https://github.com/netfoundry/ebpf-tp
 
 ## Usage
 
-This scrip allows some options for the NetFoundry Edge-Router registration process. The available options include:
+This script allows some options for the NetFoundry Edge-Router registration process. The available options include:
 
 - An optional registration key
 - An optional `--jwt` Path to file based jwt as an alternative to registration key
