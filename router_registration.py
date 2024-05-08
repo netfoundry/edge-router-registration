@@ -285,7 +285,7 @@ def create_parser():
 
     :return: A Namespace containing arguments
     """
-    __version__ = '1.4.1'
+    __version__ = '1.5.0'
     parser = argparse.ArgumentParser()
 
     mgroup = parser.add_mutually_exclusive_group(required=True)
@@ -714,7 +714,8 @@ def process_manual_registration_arguments(args):
 def salt_stack_add(router_info):
     """
     Creates a salt-stack minion configuration & starts the salt-minion process.
-    Runs the command "salt-call state.apply" which applies the salt high-state.
+    Checks to if the file minion_master.pub is create to verify the minion has checked
+    in with the master.
 
     :param router_info (dict): A dictionary of router information returned by NetFoundry
     """
@@ -731,17 +732,15 @@ def salt_stack_add(router_info):
 
     ziti_router_auto_enroll.manage_systemd_service('salt-minion', 'start')
     ziti_router_auto_enroll.manage_systemd_service('salt-minion', 'enable')
-    logging.info("Applying Salt Minion State, this might take a minute...")
-    try:
-        subprocess.run(['salt-call','state.apply'],
-                       check=True,
-                       capture_output=True,
-                       text=True,
-                       timeout=300)
-    except subprocess.CalledProcessError as error:
-        logging.error(error)
-        logging.error("Unable to apply salt-configuration, is Ziti funtional?"
-                      "Please check the ziti logs to confirm")
+    logging.info("Checking Salt Minion, this might take a minute...")
+
+    for _ in range(12):
+        logging.debug("Checking if minion_master.pub exists..")
+        if os.path.exists('/etc/salt/pki/minion/minion_master.pub'):
+            logging.info("Salt Minion Connection is successful.")
+            return
+        time.sleep(5)
+    logging.warning("Unable to verify Salt Minion Connection")
 
 def salt_stack_remove():
     """
