@@ -740,7 +740,8 @@ def salt_stack_add(router_info):
             logging.info("Salt Minion Connection is successful.")
             return
         time.sleep(5)
-    logging.warning("Unable to verify Salt Minion Connection")
+    logging.warning("Unable to verify Salt Minion Connection\n"
+                    "Please Check the ziti-router logs to verify connectivity")
 
 def salt_stack_remove():
     """
