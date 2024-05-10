@@ -76,9 +76,11 @@ def check_registration_key(registration_key):
     :return NetFoundry MOP endpoint
     """
     if len(registration_key) == 10:
-        return 'https://gateway.production.netfoundry.io/core/v2/edge-routers/register'
+        return ('https://gateway.production.netfoundry.io/core/v2/edge-routers/register/' +
+                registration_key)
     if len(registration_key) == 11:
-        return 'https://gateway.production.netfoundry.io/core/v3/edge-router-registrations'
+        return ('https://gateway.production.netfoundry.io/core/v3/edge-router-registrations/' +
+                registration_key)
     if registration_key.startswith("SA"):
         key_environment = 'sandbox'
     if registration_key.startswith("ST"):
@@ -87,12 +89,20 @@ def check_registration_key(registration_key):
         key_environment = 'development'
     if len(registration_key) == 12:
         if key_environment == 'development':
-            return 'http://localhost:9300/core/v2/edge-routers/register'
-        return 'https://gateway.' + str(key_environment) + '.netfoundry.io/core/v2/edge-routers/register'
+            return ('http://localhost:9300/core/v2/edge-routers/register/' +
+                    registration_key)
+        return ('https://gateway.' +
+                str(key_environment) +
+                '.netfoundry.io/core/v2/edge-routers/register/' +
+                registration_key)
     if len(registration_key) == 13:
         if key_environment == 'development':
-            return 'http://localhost:9300/core/v3/edge-router-registrations'
-        return 'https://gateway.' + str(key_environment) + '.netfoundry.io/core/v3/edge-router-registrations'
+            return ('http://localhost:9300/core/v3/edge-router-registrations/' +
+                    registration_key)
+        return ('https://gateway.' +
+                str(key_environment) +
+                '.netfoundry.io/core/v3/edge-router-registrations/' +
+                registration_key)
 
     logging.error("Unable to determine environment using provided registration key")
     sys.exit(1)
@@ -285,7 +295,7 @@ def create_parser():
 
     :return: A Namespace containing arguments
     """
-    __version__ = '1.5.0'
+    __version__ = '1.5.1'
     parser = argparse.ArgumentParser()
 
     mgroup = parser.add_mutually_exclusive_group(required=True)
@@ -457,20 +467,18 @@ def get_interface_by_ip(ip_address):
     logging.error("Unable to find interface name for ip.")
     sys.exit(1)
 
-def get_mop_router_information(endpoint_url, registration_key):
+def get_mop_router_information(registration_endpoint):
     """
     Retrieve MOP router information from the given endpoint URL and registration key and
     return the json results. If the jwt is None exit.
 
-    :param endpoint_url: The URL of the endpoint where MOP router information is located.
-    :param registration_key: The registration key for accessing the MOP router information.
+    :param registration_endpoint: The edge router registration endpoint
     :return: The response object containing MOP router information.
     """
     try:
         headers = {'content-type': 'application/json'}
-        endpoint_url = f"{endpoint_url}/{registration_key}"
-        logging.debug("Connecting to: %s", endpoint_url)
-        response = requests.post(endpoint_url,
+        logging.debug("Connecting to: %s", registration_endpoint)
+        response = requests.post(registration_endpoint,
                                  headers=headers,
                                  timeout=20)
         http_code = response.status_code
@@ -562,13 +570,14 @@ def handle_ufw_rules(args, router_info, ufw_save_file):
     else:
         ufw_add_rules(local_subnet, '443', 'tcp', ufw_save_file)
 
-def handle_ziti_router_auto_enroll(args, router_info, enrollment_commands):
+def handle_ziti_router_auto_enroll(args, router_info, enrollment_commands, registration_endpoint):
     """
     Handles the gathering information & running of the ziti_router_auto_enroll.
 
     :param args (argparse.Namespace): A Namespace object containing the parsed arguments.
     :param router_info (dict): A dictionary of router information returned by NetFoundry
     :param enrollment_commands(list): A list of commands to pass in the enrollment
+    :param registration_endpoint: The edge router registration endpoint
     """
     # set install dir
     enrollment_commands.append('--installDir')
@@ -678,7 +687,11 @@ def handle_ziti_router_auto_enroll(args, router_info, enrollment_commands):
     logging.debug(enrollment_commands)
 
     # run enrollment
-    ziti_router_auto_enroll.main(enrollment_commands)
+
+    try:
+        ziti_router_auto_enroll.main(enrollment_commands)
+    except OSError:
+        post_mop_callback(registration_endpoint,"1","Error: Ziti Registration failed")
 
     # for backward compatability with existing NetFoundry deployments
     target = "/opt/netfoundry/ziti/ziti-router/ziti"
@@ -711,13 +724,50 @@ def process_manual_registration_arguments(args):
 
     return router_info
 
-def salt_stack_add(router_info):
+def post_mop_callback(registration_endpoint, status, message):
+    """
+    Post a message back to MOP with status & message.
+
+    :param registration_endpoint: The edge router registration endpoint
+    :param status: Anything above 0 is an error.
+    :param message: Information message about status.
+    """
+    logging.debug("Posting back to MOP with: %s,%s",status, message)
+    try:
+        headers = {'content-type': 'application/json'}
+        body = {
+                "status": status,
+                "message": message
+                }
+        if "v3" in registration_endpoint:
+            response = requests.delete(registration_endpoint,
+                                       headers=headers,
+                                       data=json.dumps(body),
+                                       timeout=20)
+        else:
+            registration_endpoint = f"{registration_endpoint}/registered"
+            response = requests.post(registration_endpoint,
+                                     headers=headers,
+                                     data=json.dumps(body),
+                                     timeout=20)
+        http_code = response.status_code
+        logging.debug("Connected to: %s", registration_endpoint)
+        logging.debug('HTTP Response STATUS CODE: %s', http_code)
+    except requests.exceptions.ConnectionError as exception_result:
+        logging.warning('An issue occurred while trying to connect: %s', exception_result)
+    except requests.exceptions.Timeout as timeout_exception:
+        logging.warning('Timed out trying to reach MOP: %s', timeout_exception)
+    if response.status_code == 400:
+        logging.warning("Unable to verify key, response: %s", response.text)
+
+def salt_stack_add(router_info, registration_endpoint):
     """
     Creates a salt-stack minion configuration & starts the salt-minion process.
     Checks to if the file minion_master.pub is create to verify the minion has checked
     in with the master.
 
     :param router_info (dict): A dictionary of router information returned by NetFoundry
+    :param registration_endpoint: The edge router registration endpoint
     """
     logging.info("Creating Salt configuration")
     minion_config = '/etc/salt/minion.d/nf-minion.conf'
@@ -742,6 +792,7 @@ def salt_stack_add(router_info):
         time.sleep(5)
     logging.warning("Unable to verify Salt Minion Connection\n"
                     "Please Check the ziti-router logs to verify connectivity")
+    post_mop_callback(registration_endpoint,"1","Warning: Salt Connectivity is Unverified")
 
 def salt_stack_remove():
     """
@@ -959,10 +1010,10 @@ def main():
 
     # set mop endpoint using the registration key
     if args.registration_key:
-        mop_endpoint = check_registration_key(args.registration_key)
+        registration_endpoint = check_registration_key(args.registration_key)
 
         # get jwt from MOP
-        router_info = get_mop_router_information(mop_endpoint, args.registration_key)
+        router_info = get_mop_router_information(registration_endpoint)
         logging.debug(router_info)
     else:
         router_info = process_manual_registration_arguments(args)
@@ -972,7 +1023,7 @@ def main():
         check_controller(router_info['networkControllerHost'])
 
     # handle ziti_router_auto_enroll
-    handle_ziti_router_auto_enroll(args, router_info, enrollment_commands)
+    handle_ziti_router_auto_enroll(args, router_info, enrollment_commands, registration_endpoint)
 
     # setup UFW
     if args.skip_fw:
@@ -980,13 +1031,13 @@ def main():
 
     # setup salt
     if args.salt:
-        salt_stack_add(router_info)
+        salt_stack_add(router_info, registration_endpoint)
 
     # enable diverter
     if args.diverter:
         diverter_add()
 
-
+    post_mop_callback(registration_endpoint,"0","Registration Successful")
     logging.info("\033[0;35mRegistration Successful\033[0m")
     logging.info("\033[0;35mPlease use\033[0m \033[0;31mnfhelp-update\033[0;35m "
                  "before you use nfhelp commands\033[0m")
