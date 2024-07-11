@@ -54,7 +54,14 @@ def check_controller_certificate(controller_host):
             or IP address otherwise exit with an error.
     """
     logging.debug("Starting controller certificate check for host %s", controller_host)
-    certificate = ssl.get_server_certificate((controller_host, 443)).encode('utf-8')
+    try:
+        certificate = ssl.get_server_certificate((controller_host, 443)).encode('utf-8')
+    except ssl.SSLEOFError:
+        logging.error("Unable to retrieve certificate due to SSL Error")
+        sys.exit(1)
+    except TimeoutError:
+        logging.error("Unable to retrieve certificate due to timeout.")
+        sys.exit(1)
     loaded_cert = x509.load_pem_x509_certificate(certificate, default_backend())
     san = loaded_cert.extensions.get_extension_for_class(x509.SubjectAlternativeName)
     san_dns_names = san.value.get_values_for_type(x509.DNSName)
@@ -295,7 +302,7 @@ def create_parser():
 
     :return: A Namespace containing arguments
     """
-    __version__ = '1.5.1'
+    __version__ = '1.5.2'
     parser = argparse.ArgumentParser()
 
     mgroup = parser.add_mutually_exclusive_group(required=True)
