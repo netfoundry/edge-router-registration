@@ -302,7 +302,7 @@ def create_parser():
 
     :return: A Namespace containing arguments
     """
-    __version__ = '1.5.2'
+    __version__ = '1.6.0'
     parser = argparse.ArgumentParser()
 
     mgroup = parser.add_mutually_exclusive_group(required=True)
@@ -641,6 +641,10 @@ def handle_ziti_router_auto_enroll(args, router_info, enrollment_commands, regis
             enrollment_commands.append(f"tls:{args.fabric}:80")
         else:
             enrollment_commands.append('--assumePublic')
+
+    # if ha is enabled on MOP network & haEnable is passed down
+    if router_info['haEnabled']:
+        enrollment_commands.append('--ha')
 
     # add jwt to enrollment command that was retrieved from NetFoundry
     # insert it as the first argument to ensure the positional
