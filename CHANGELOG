@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file. The format 
 - Add function to check haEnabled flag from MOP.
 - Rebuild to consume ziti_router_auto_enroll 1.0.20.
 
+
 ## [1.5.2] - 2024-07-11
 
 ### Added
