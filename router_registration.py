@@ -302,7 +302,7 @@ def create_parser():
 
     :return: A Namespace containing arguments
     """
-    __version__ = '1.6.0'
+    __version__ = '1.6.1'
     parser = argparse.ArgumentParser()
 
     mgroup = parser.add_mutually_exclusive_group(required=True)
@@ -331,6 +331,10 @@ def create_parser():
                         action='store_false',
                         help='Skip applying fw rules',
                         default=True)
+    parser.add_argument('--haEnabled',
+                        action='store_true',
+                        help='Specify haEnabled flag in configuration',
+                        default=False)
     parser.add_argument('--hostOnly',
                         action='store_true',
                         help='Enable ER Tunnel in host mode & do not setup local dns',
@@ -702,7 +706,8 @@ def handle_ziti_router_auto_enroll(args, router_info, enrollment_commands, regis
     try:
         ziti_router_auto_enroll.main(enrollment_commands)
     except OSError:
-        post_mop_callback(registration_endpoint,"1","Error: Ziti Registration failed")
+        if registration_endpoint is not None:
+            post_mop_callback(registration_endpoint,"1","Error: Ziti Registration failed")
 
     # for backward compatability with existing NetFoundry deployments
     target = "/opt/netfoundry/ziti/ziti-router/ziti"
@@ -726,6 +731,7 @@ def process_manual_registration_arguments(args):
     router_info['edgeRouter']={}
     router_info['edgeRouter']['jwt'] = jwt_string
     router_info['edgeRouter']['hostId'] = args.hostId
+    router_info['haEnabled'] = args.haEnabled
     if args.linkListener:
         router_info['edgeRouter']['linkListener'] = True
 
@@ -803,7 +809,8 @@ def salt_stack_add(router_info, registration_endpoint):
         time.sleep(5)
     logging.warning("Unable to verify Salt Minion Connection\n"
                     "Please Check the ziti-router logs to verify connectivity")
-    post_mop_callback(registration_endpoint,"1","Warning: Salt Connectivity is Unverified")
+    if registration_endpoint is not None:
+        post_mop_callback(registration_endpoint,"1","Warning: Salt Connectivity is Unverified")
 
 def salt_stack_remove():
     """
@@ -1028,6 +1035,7 @@ def main():
         logging.debug(router_info)
     else:
         router_info = process_manual_registration_arguments(args)
+        registration_endpoint = None
 
     # check controller communications
     if not args.proxyAddress:
@@ -1048,7 +1056,8 @@ def main():
     if args.diverter:
         diverter_add()
 
-    post_mop_callback(registration_endpoint,"0","Registration Successful")
+    if registration_endpoint is not None:
+        post_mop_callback(registration_endpoint,"0","Registration Successful")
     logging.info("\033[0;35mRegistration Successful\033[0m")
     logging.info("\033[0;35mPlease use\033[0m \033[0;31mnfhelp-update\033[0;35m "
                  "before you use nfhelp commands\033[0m")
