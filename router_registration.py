@@ -302,7 +302,7 @@ def create_parser():
 
     :return: A Namespace containing arguments
     """
-    __version__ = '1.6.1'
+    __version__ = '1.6.2'
     parser = argparse.ArgumentParser()
 
     mgroup = parser.add_mutually_exclusive_group(required=True)
@@ -331,6 +331,10 @@ def create_parser():
                         action='store_false',
                         help='Skip applying fw rules',
                         default=True)
+    parser.add_argument('--skipChecks',
+                        action='store_true',
+                        default=False,
+                        help='Skip all controller checks - port/certificate')
     parser.add_argument('--haEnabled',
                         action='store_true',
                         help='Specify haEnabled flag in configuration',
@@ -1037,8 +1041,15 @@ def main():
         router_info = process_manual_registration_arguments(args)
         registration_endpoint = None
 
+    # skip controller checks if proxy is used or specifically skipped
+    if args.proxyAddress or args.skipChecks:
+        logging.info("Skipping controller checks")
+        do_checks = False
+    else:
+        do_checks = True
+
     # check controller communications
-    if not args.proxyAddress:
+    if do_checks:
         check_controller(router_info['networkControllerHost'])
 
     # handle ziti_router_auto_enroll
