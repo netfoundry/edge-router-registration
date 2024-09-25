@@ -26,7 +26,7 @@ import requests
 from colorama import Fore, Style, init
 import ziti_router_auto_enroll
 
-def check_controller(controller_host):
+def check_controller(controller_host, skip_software_mgmt_port):
     """
     Check controller for open ports & certificate. If anything doesn't work exit.
 
@@ -38,7 +38,11 @@ def check_controller(controller_host):
     check_controller_certificate(controller_host)
 
     # check controller for ports
-    port_list = [443, 6262]
+    if skip_software_mgmt_port:
+        logging.info("Skipping Software Management Port checks")
+        port_list = [443]
+    else:
+        port_list = [443, 6262]
     for port in port_list:
         if not check_host_port(controller_host, port):
             logging.error("Unable to communicate with "
@@ -302,7 +306,7 @@ def create_parser():
 
     :return: A Namespace containing arguments
     """
-    __version__ = '1.6.2'
+    __version__ = '1.6.3'
     parser = argparse.ArgumentParser()
 
     mgroup = parser.add_mutually_exclusive_group(required=True)
@@ -335,6 +339,10 @@ def create_parser():
                         action='store_true',
                         default=False,
                         help='Skip all controller checks - port/certificate')
+    parser.add_argument('--skipSoftwareMgmtPortCheck',
+                        action='store_true',
+                        default=False,
+                        help='Skip the Software Management Port Check')
     parser.add_argument('--haEnabled',
                         action='store_true',
                         help='Specify haEnabled flag in configuration',
@@ -1050,7 +1058,7 @@ def main():
 
     # check controller communications
     if do_checks:
-        check_controller(router_info['networkControllerHost'])
+        check_controller(router_info['networkControllerHost'], args.skipSoftwareMgmtPortCheck)
 
     # handle ziti_router_auto_enroll
     handle_ziti_router_auto_enroll(args, router_info, enrollment_commands, registration_endpoint)
