@@ -26,20 +26,21 @@ import requests
 from colorama import Fore, Style, init
 import ziti_router_auto_enroll
 
-def check_controller(controller_host):
+def check_controller(controller_host, ports_to_check):
     """
     Check controller for open ports & certificate. If anything doesn't work exit.
 
     :param controller_host (str): IP address or hostname of the controller host.
     """
+    if len(ports_to_check) == 0:
+        return
+
     logging.info("Checking communication with controller")
 
     # check cert matches name
     check_controller_certificate(controller_host)
 
-    # check controller for ports
-    port_list = [443, 6262]
-    for port in port_list:
+    for port in ports_to_check:
         if not check_host_port(controller_host, port):
             logging.error("Unable to communicate with "
                           "controller using tcp port: %s", port)
@@ -335,6 +336,10 @@ def create_parser():
                         action='store_true',
                         default=False,
                         help='Skip all controller checks - port/certificate')
+    parser.add_argument('--skipSaltCheck',
+                        action='store_true',
+                        default=False,
+                        help='Skip port 6262 controller checks')                        
     parser.add_argument('--haEnabled',
                         action='store_true',
                         help='Specify haEnabled flag in configuration',
@@ -1042,15 +1047,17 @@ def main():
         registration_endpoint = None
 
     # skip controller checks if proxy is used or specifically skipped
-    if args.proxyAddress or args.skipChecks:
+    if args.proxyAddress or args.ב:
         logging.info("Skipping controller checks")
-        do_checks = False
+        ports_to_check = []
+    elif args.skipSaltCheck:
+        logging.info("Skipping controller salt check (6262)")
+        ports_to_check = [443]
     else:
-        do_checks = True
+        ports_to_check = [443, 6262]
 
     # check controller communications
-    if do_checks:
-        check_controller(router_info['networkControllerHost'])
+    check_controller(router_info['networkControllerHost'])
 
     # handle ziti_router_auto_enroll
     handle_ziti_router_auto_enroll(args, router_info, enrollment_commands, registration_endpoint)
