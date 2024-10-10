@@ -314,7 +314,7 @@ def create_parser():
     mgroup.add_argument('registration_key', nargs='?',
                         help='NetFoundry Edge-Router Registration Key')
     mgroup.add_argument('--jwt', type=str,
-                        help='Path to file based jwt')
+                        help='JWT string')
     parser.add_argument('-f', '--force',
                         action="store_false",
                         help='Forcefully proceed with re-enrollment',
