@@ -697,7 +697,7 @@ def handle_ziti_router_auto_enroll(args, router_info, enrollment_commands, regis
     # pass in fabric port
     logging.debug("Setting fabric port to %s", fabric_port)
     enrollment_commands.append('--controllerFabricPort')
-    enrollment_commands.append("{fabric_port}")
+    enrollment_commands.append(f"{fabric_port}")
 
     # add proxy if specified
     if args.proxyAddress:
