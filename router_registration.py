@@ -167,9 +167,8 @@ def check_port(ip_host, port, timeout):
         if port == 6262:
             logging.info("Found port 6262 closed - could be intentional")
             return True
-        else:
-            logging.error("Socket error: %s", error)
-            return False
+        logging.error("Socket error: %s", error)
+        return False
     finally:
         socket_connection.close()
 
@@ -306,7 +305,7 @@ def create_parser():
 
     :return: A Namespace containing arguments
     """
-    __version__ = '1.6.3'
+    __version__ = '1.6.4'
     parser = argparse.ArgumentParser()
 
     mgroup = parser.add_mutually_exclusive_group(required=True)
@@ -314,7 +313,7 @@ def create_parser():
     mgroup.add_argument('registration_key', nargs='?',
                         help='NetFoundry Edge-Router Registration Key')
     mgroup.add_argument('--jwt', type=str,
-                        help='Path to file based jwt')
+                        help='JWT string')
     parser.add_argument('-f', '--force',
                         action="store_false",
                         help='Forcefully proceed with re-enrollment',
@@ -645,6 +644,13 @@ def handle_ziti_router_auto_enroll(args, router_info, enrollment_commands, regis
         enrollment_commands.append('tls:0.0.0.0:443')
         enrollment_commands.append(f"{args.edge}:443")
 
+    # set fabric_port depending on ziti version
+    fabric_port = 80
+    if ziti_router_auto_enroll.compare_semver(
+        router_info['productMetadata']['zitiVersion'],'0.30.0'
+        ) >= 0:
+        fabric_port = 443
+
     # if the setting was selected in the NetFoundry console
     # if overriding the fabric listener add a manual linkListener
     # Otherwise the auto_enroller will create one if passing in
@@ -653,8 +659,8 @@ def handle_ziti_router_auto_enroll(args, router_info, enrollment_commands, regis
         if args.fabric:
             enrollment_commands.append('--linkListeners')
             enrollment_commands.append('transport')
-            enrollment_commands.append('tls:0.0.0.0:80')
-            enrollment_commands.append(f"tls:{args.fabric}:80")
+            enrollment_commands.append(f"tls:0.0.0.0:{fabric_port}")
+            enrollment_commands.append(f"tls:{args.fabric}:{fabric_port}")
         else:
             enrollment_commands.append('--assumePublic')
 
@@ -688,16 +694,10 @@ def handle_ziti_router_auto_enroll(args, router_info, enrollment_commands, regis
         enrollment_commands.append(router_info['productMetadata']['zitiBinaryBundleLinuxAMD64'])
 
 
-    # check if ziti version is 0.30.0 or above
-    fabric_port = ziti_router_auto_enroll.compare_semver(
-        router_info['productMetadata']['zitiVersion'],'0.30.0'
-    )
-
-    # pass in fabric port 443 for versions 0.30.0 and above
-    if fabric_port >= 0:
-        logging.debug("Setting fabric port to 443")
-        enrollment_commands.append('--controllerFabricPort')
-        enrollment_commands.append('443')
+    # pass in fabric port
+    logging.debug("Setting fabric port to %s", fabric_port)
+    enrollment_commands.append('--controllerFabricPort')
+    enrollment_commands.append(f"{fabric_port}")
 
     # add proxy if specified
     if args.proxyAddress:
