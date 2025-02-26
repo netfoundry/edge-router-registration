@@ -305,7 +305,7 @@ def create_parser():
 
     :return: A Namespace containing arguments
     """
-    __version__ = '1.6.4'
+    __version__ = '1.6.5'
     parser = argparse.ArgumentParser()
 
     mgroup = parser.add_mutually_exclusive_group(required=True)
@@ -709,6 +709,16 @@ def handle_ziti_router_auto_enroll(args, router_info, enrollment_commands, regis
         if args.proxyPort:
             enrollment_commands.append('--proxyPort')
             enrollment_commands.append(str(args.proxyPort))
+
+    # add web for healthcheck
+    enrollment_commands.append('--webs')
+    enrollment_commands.append('health-check')
+    enrollment_commands.append('0.0.0.0:8081')
+    if args.edge:
+        enrollment_commands.append(f"{args.edge}:8081")
+    else:
+        enrollment_commands.append(ziti_router_auto_enroll.get_private_address() + ':8081')
+    enrollment_commands.append('health-checks')
 
     # print enrollment command in debug
     logging.debug(enrollment_commands)
