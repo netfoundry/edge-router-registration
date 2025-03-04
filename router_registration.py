@@ -115,7 +115,7 @@ def check_registration_key(registration_key):
                 '.netfoundry.io/core/v3/edge-router-registrations/' +
                 registration_key)
 
-    logging.error("Unable to determine environment using provided registration key")
+    logging.error("Unable to determine environment using registration key %s", registration_key)
     sys.exit(1)
 
 def check_host_port(ip_host, port, max_retries=2, delay=1, timeout=2):
@@ -305,7 +305,7 @@ def create_parser():
 
     :return: A Namespace containing arguments
     """
-    __version__ = '1.6.5'
+    __version__ = '1.6.6'
     parser = argparse.ArgumentParser()
 
     mgroup = parser.add_mutually_exclusive_group(required=True)
