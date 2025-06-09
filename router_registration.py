@@ -305,7 +305,7 @@ def create_parser():
 
     :return: A Namespace containing arguments
     """
-    __version__ = '1.6.7'
+    __version__ = '1.6.8'
     parser = argparse.ArgumentParser()
 
     mgroup = parser.add_mutually_exclusive_group(required=True)
@@ -352,9 +352,6 @@ def create_parser():
                         default=False)
     parser.add_argument('--hostId', type=str,
                         help='Salstack minion host id')
-    parser.add_argument('--linkListener',
-                        action='store_false',
-                        help='Enabled local LinkListener')
     parser.add_argument('--downloadUrl', type=str,
                         help='Specify bundle to download')
     parser.add_argument('--ntp', type=str,
@@ -754,8 +751,10 @@ def process_manual_registration_arguments(args):
     router_info['edgeRouter']['jwt'] = jwt_string
     router_info['edgeRouter']['hostId'] = args.hostId
     router_info['haEnabled'] = args.haEnabled
-    if args.linkListener:
+    if args.fabric:
         router_info['edgeRouter']['linkListener'] = True
+    else:
+        router_info['edgeRouter']['linkListener'] = False
 
     router_info['productMetadata']={}
     ziti_version = ziti_router_auto_enroll.get_ziti_controller_version(jwt_info['iss'])
