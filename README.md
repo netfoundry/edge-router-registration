@@ -100,10 +100,12 @@ This script allows some options for the NetFoundry Edge-Router registration proc
 - An optional `--logFile` argument to specify the log file (default: router_registration.log)
 - An optional `--salt` flag to skip salt-stack setup
 - An optional `--skip-fw` flag to skip applying firewall rules
+- An optional `--skipChecks` flag t0 skip all controller checks
 - An optional `--hostOnly` enable ER Tunnel in host mode & do not setup local dns
 - An optional `--hostId` to specify a Salstack minion host id
 - An optional `--downloadUrl` to specify an alternate bundle to download location
 - An optional `--diverter` to enable diverter features
+- An optional `--ntp` to specify an alternate ntp server to check the time
 - An optional `--proxyType` to specify a proxy type
 - An optional `--proxyAddress` to specify a proxy address
 - An optional `--proxyPort` to specify a proxy port
