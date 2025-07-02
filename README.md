@@ -119,3 +119,7 @@ Additionally, the function allows for manual configuration of edge/fabric and tu
   - Will override the automatic detection of the default GW interface & take an IP Address.  The IP must be assiged to one of the local interfaces, since this will listen for incoming traffic.
 - `--fabric`: IP or DNS name for the fabric component (if enabled)
   - Will override the automatic detection of the default GW interface & take a hostname or IP address.  This information cannot be verified since it could be masked.
+- `--dnsIPRange`:  Override the default resolver ip range assiged.
+  - Must in in subnet notation.  Example: 100.64.0.0/10
+- `--lanIf`: Override the interface name assigned to lanIf.
+  - Will override the interface in which automatic firewall rules will be added to match services.  Must the name of the interface.
