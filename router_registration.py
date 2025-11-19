@@ -1068,6 +1068,8 @@ def main():
 
         # get jwt from MOP
         router_info = get_mop_router_information(registration_endpoint)
+        if args.fabric:
+            router_info['edgeRouter']['linkListener'] = True
         logging.debug(router_info)
     else:
         router_info = process_manual_registration_arguments(args)
