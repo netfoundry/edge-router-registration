@@ -78,45 +78,60 @@ def check_controller_certificate(controller_host):
                   "'%s', Are you behind a proxy?", controller_host)
     sys.exit(1)
 
-def check_registration_key(registration_key):
+def check_registration_key(registration_key, registration_url=None):
     """
-    Check_environment_key determines the environment based on a registration key and
-    return the MOP endpoint. If the key does not match exit.
+    Determine the MOP registration endpoint from a registration key.
 
-    :param registration_key The registration key to check
-    :return NetFoundry MOP endpoint
+    If registration_url is provided, its scheme+host[:port] will replace the base of the URL,
+    while preserving the expected registration path determined from the key (v2/v3 and resource).
+
+    :param registration_key: The registration key to check
+    :param registration_url: Optional base URL to override the default gateway host
+    :return: NetFoundry MOP endpoint URL
     """
-    if len(registration_key) == 10:
-        return ('https://gateway.production.netfoundry.io/core/v2/edge-routers/register/' +
-                registration_key)
-    if len(registration_key) == 11:
-        return ('https://gateway.production.netfoundry.io/core/v3/edge-router-registrations/' +
-                registration_key)
-    if registration_key.startswith("SA"):
-        key_environment = 'sandbox'
-    if registration_key.startswith("ST"):
-        key_environment = 'staging'
-    if registration_key.startswith("DE"):
-        key_environment = 'development'
-    if len(registration_key) == 12:
-        if key_environment == 'development':
-            return ('http://localhost:9300/core/v2/edge-routers/register/' +
-                    registration_key)
-        return ('https://gateway.' +
-                str(key_environment) +
-                '.netfoundry.io/core/v2/edge-routers/register/' +
-                registration_key)
-    if len(registration_key) == 13:
-        if key_environment == 'development':
-            return ('http://localhost:9300/core/v3/edge-router-registrations/' +
-                    registration_key)
-        return ('https://gateway.' +
-                str(key_environment) +
-                '.netfoundry.io/core/v3/edge-router-registrations/' +
-                registration_key)
+    key_len = len(registration_key)
 
-    logging.error("Unable to determine environment using registration key %s", registration_key)
-    sys.exit(1)
+    # Determine registration path based on key length
+    if key_len in (10, 12):
+        path = f"/core/v2/edge-routers/register/{registration_key}"
+    elif key_len in (11, 13):
+        path = f"/core/v3/edge-router-registrations/{registration_key}"
+    else:
+        logging.error("Unable to determine registration path using key length for key %s",
+                      registration_key)
+        sys.exit(1)
+
+    # If an override base URL is provided, use it to replace the scheme+netloc only
+    if registration_url:
+        parsed = urlparse(registration_url)
+        scheme = parsed.scheme or 'https'
+        # When no scheme is provided, urlparse puts the host in 'path'
+        netloc = parsed.netloc or parsed.path
+        if not netloc:
+            logging.error("Invalid registration_url provided: %s", registration_url)
+            sys.exit(1)
+        base = f"{scheme}://{netloc}".rstrip('/')
+        return f"{base}{path}"
+
+    # No override provided: select default base depending on key and environment
+    if key_len in (10, 11):
+        base = "https://gateway.production.netfoundry.io"
+        return f"{base}{path}"
+
+    # For 12/13-char keys, infer environment from prefix
+    env_map = {"SA": "sandbox", "ST": "staging", "DE": "development"}
+    key_environment = env_map.get(registration_key[:2])
+    if not key_environment:
+        logging.error("Unable to determine environment using registration key prefix for key %s",
+                      registration_key)
+        sys.exit(1)
+
+    if key_environment == 'development':
+        base = "http://localhost:9300"
+    else:
+        base = f"https://gateway.{key_environment}.netfoundry.io"
+
+    return f"{base}{path}"
 
 def check_host_port(ip_host, port, max_retries=2, delay=1, timeout=2):
     """
@@ -305,7 +320,7 @@ def create_parser():
 
     :return: A Namespace containing arguments
     """
-    __version__ = '1.6.8'
+    __version__ = '1.6.9'
     parser = argparse.ArgumentParser()
 
     mgroup = parser.add_mutually_exclusive_group(required=True)
@@ -370,11 +385,11 @@ def create_parser():
     parser.add_argument('--customRepoAddress',type=str,
                         help="Override the default github repository address"
                              " - replacement must match github structure")
-
+    parser.add_argument('--registrationUrl', type=str,
+                        help='Specify the reg URL instead of using the key to determine it')
     parser.add_argument('-v', '--version',
                         action='version',
                         version=__version__)
-
     group = parser.add_argument_group('Manual Configuration',
                                       'Manually configure edge/fabric and tunnel')
     group.add_argument('-e', '--edge',
@@ -1049,10 +1064,12 @@ def main():
 
     # set mop endpoint using the registration key
     if args.registration_key:
-        registration_endpoint = check_registration_key(args.registration_key)
+        registration_endpoint = check_registration_key(args.registration_key, args.registrationUrl)
 
         # get jwt from MOP
         router_info = get_mop_router_information(registration_endpoint)
+        if args.fabric:
+            router_info['edgeRouter']['linkListener'] = True
         logging.debug(router_info)
     else:
         router_info = process_manual_registration_arguments(args)
