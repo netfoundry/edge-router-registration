@@ -320,7 +320,7 @@ def create_parser():
 
     :return: A Namespace containing arguments
     """
-    __version__ = '1.6.9'
+    __version__ = '1.6.10'
     parser = argparse.ArgumentParser()
 
     mgroup = parser.add_mutually_exclusive_group(required=True)
@@ -420,8 +420,14 @@ def diverter_add():
     except requests.exceptions.ConnectionError as exception_result:
         logging.warning('An issue occurred while trying to connect: %s', exception_result)
 
-    if platform.machine() in ['x86_64','AMD64']:
+    machine = platform.machine()
+    if machine in ['x86_64', 'AMD64']:
         system_arch = 'amd64'
+    elif machine in ['aarch64', 'arm64']:
+        system_arch = 'arm64'
+    else:
+        logging.error("Unsupported architecture: %s", machine)
+        sys.exit(1)
 
     package_filename = f"zfw-tunnel_{release_data['tag_name']}_{system_arch}.deb"
 
@@ -617,11 +623,7 @@ def handle_ziti_router_auto_enroll(args, router_info, enrollment_commands, regis
     enrollment_commands.append('--installDir')
     enrollment_commands.append('/opt/netfoundry/ziti/ziti-router')
 
-    # add tunneler by default for NetFoundry edge-router customers
-    # if overriding the tunnel ip, check if valid and configure a
-    # manual tunnelListener.  Otherwise just let the auto_enroller
-    # create one.
-
+    interface_name = None
     if args.hostOnly:
         enrollment_commands.append("--skipDNS")
         enrollment_commands.append("--tunnelListener")
@@ -1104,6 +1106,18 @@ def main():
     if registration_endpoint is not None:
         post_mop_callback(registration_endpoint,"0","Registration Successful")
     logging.info("\033[0;35mRegistration Successful\033[0m")
+
+    # expand disk
+    expand_disk_script = "/opt/netfoundry/expand_disk.py"
+    if os.path.exists(expand_disk_script):
+        logging.info("\033[0;35mFound disk expansion script\033[0m ")
+        logging.info("Running disk expansion script")
+        try:
+            subprocess.run([expand_disk_script, "--logLevel", args.logLevel],
+                           check=True)
+        except subprocess.CalledProcessError as error:
+            logging.error("Failed to run disk expansion script: %s", error)
+
     logging.info("\033[0;35mPlease use\033[0m \033[0;31mnfhelp-update\033[0;35m "
                  "before you use nfhelp commands\033[0m")
 
