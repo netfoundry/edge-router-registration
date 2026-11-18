@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.12] - 2026-11-18
+
+### Fixed
+
+- Bootstrap (`router-registration`) now exits with the registration script's return code instead of always 0.
+- Removed Python 3.8 `CryptographyDeprecationWarning` shown at startup.
+
+### Changed
+
+- Build release binaries on Ubuntu 22.04 (Python 3.10); Ubuntu 20.04 is no longer supported.
+
 ## [1.6.11] - 2026-11-13
 
 ### Changed
