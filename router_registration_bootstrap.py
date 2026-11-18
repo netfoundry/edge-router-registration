@@ -95,7 +95,8 @@ def main():
 
     # run script
     sub_command = [registration_script] + sys.argv[1:]
-    subprocess.run(sub_command)
+    result = subprocess.run(sub_command, check=False)
+    sys.exit(result.returncode)
 
 # main
 if __name__ == '__main__':
