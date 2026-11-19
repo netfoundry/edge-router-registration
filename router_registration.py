@@ -320,7 +320,7 @@ def create_parser():
 
     :return: A Namespace containing arguments
     """
-    __version__ = '1.6.12'
+    __version__ = '1.6.13'
     parser = argparse.ArgumentParser()
 
     mgroup = parser.add_mutually_exclusive_group(required=True)
@@ -1003,10 +1003,27 @@ def ufw_remove_rules(ufw_save_file):
     except OSError:
         logging.error("Unable to remove previous ufw rules file")
 
+def restore_library_path():
+    """
+    PyInstaller points LD_LIBRARY_PATH at its bundled libraries (e.g. libcrypto.so.3).
+    Restore the original value so child processes such as systemctl use the host's
+    libraries instead of ours.
+    """
+    if not getattr(sys, 'frozen', False):
+        return
+    orig = os.environ.get('LD_LIBRARY_PATH_ORIG')
+    if orig is not None:
+        os.environ['LD_LIBRARY_PATH'] = orig
+    else:
+        os.environ.pop('LD_LIBRARY_PATH', None)
+
 def main():
     """
     Main logic
     """
+    # use host libraries for child processes
+    restore_library_path()
+
     # create parser
     parser = create_parser()
 

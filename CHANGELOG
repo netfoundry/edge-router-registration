@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.13] - 2026-11-19
+
+### Fixed
+
+- Fixed `systemctl` failing on Ubuntu 26.04 (`OPENSSL_3.4.0 not found`): child processes no longer inherit PyInstaller's bundled library path, so they use the host's libraries.
+
+### Changed
+
+- Pinned `requirements.txt` versions for reproducible builds.
+
 ## [1.6.12] - 2026-11-18
 
 ### Fixed

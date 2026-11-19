@@ -62,10 +62,27 @@ def root_check():
         print("ERROR: This script must be run with root privileges, please use sudo or run as root")
         sys.exit(1)
 
+def restore_library_path():
+    """
+    PyInstaller points LD_LIBRARY_PATH at its bundled libraries (e.g. libcrypto.so.3).
+    Restore the original value so child processes such as systemctl use the host's
+    libraries instead of ours.
+    """
+    if not getattr(sys, 'frozen', False):
+        return
+    orig = os.environ.get('LD_LIBRARY_PATH_ORIG')
+    if orig is not None:
+        os.environ['LD_LIBRARY_PATH'] = orig
+    else:
+        os.environ.pop('LD_LIBRARY_PATH', None)
+
 def main():
     """
     Main logic
     """
+    # use host libraries for child processes
+    restore_library_path()
+
     #__version__ = '1.0.0'
     # change log
     # 1.0.0 - initial release
